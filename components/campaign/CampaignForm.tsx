@@ -1,8 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarRange, Loader2, PlusCircle } from "lucide-react";
+import { CalendarRange, Loader2, PlusCircle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -80,5 +81,56 @@ export function CampaignForm() {
         {isSubmitting ? "Creation en cours..." : "Creer la campagne"}
       </Button>
     </form>
+  );
+}
+
+type DeleteCampaignButtonProps = {
+  campaignId: string;
+  campaignName: string;
+};
+
+export function DeleteCampaignButton({ campaignId, campaignName }: DeleteCampaignButtonProps) {
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const onDelete = async () => {
+    const confirmed = window.confirm(
+      `Supprimer la campagne "${campaignName}" ? Cette action est irreversible.`,
+    );
+    if (!confirmed || isDeleting) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/campaigns?id=${encodeURIComponent(campaignId)}`, {
+        method: "DELETE",
+      });
+      const payload = (await response.json().catch(() => ({}))) as { message?: string };
+      if (!response.ok) {
+        toast.error(payload.message ?? "Suppression de la campagne impossible.");
+        return;
+      }
+      toast.success("Campagne supprimee.");
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur reseau lors de la suppression.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      disabled={isDeleting}
+      onClick={onDelete}
+      className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-700"
+      aria-label={`Supprimer la campagne ${campaignName}`}
+    >
+      {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+      Supprimer
+    </Button>
   );
 }

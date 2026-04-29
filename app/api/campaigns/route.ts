@@ -51,3 +51,47 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(created, { status: 201 });
 }
+
+export async function DELETE(request: NextRequest) {
+  const guard = await requireApiRole(["MEDECIN"]);
+  if (guard.response) {
+    return guard.response;
+  }
+
+  const campaignId = request.nextUrl.searchParams.get("id")?.trim();
+  if (!campaignId) {
+    return NextResponse.json({ message: "Identifiant campagne requis." }, { status: 400 });
+  }
+
+  const storage = getStorageAdapter();
+  const state = await storage.readState();
+  const campaign = state.campaigns.find((item) => item.id === campaignId);
+  if (!campaign) {
+    return NextResponse.json({ message: "Campagne introuvable." }, { status: 404 });
+  }
+
+  const hasLinkedScreenings = state.screenings.some((item) => item.campaignId === campaignId);
+  if (hasLinkedScreenings) {
+    return NextResponse.json(
+      {
+        message:
+          "Suppression impossible: cette campagne contient deja des fiches de depistage liees.",
+      },
+      { status: 409 },
+    );
+  }
+
+  await storage.patchState((draft) => {
+    draft.campaigns = draft.campaigns.filter((item) => item.id !== campaignId);
+    draft.campaignUsers = draft.campaignUsers.filter((item) => item.campaignId !== campaignId);
+  });
+
+  await logAuditEvent({
+    actorUserId: guard.session.user.id,
+    action: "DELETE_CAMPAIGN",
+    targetType: "CAMPAIGN",
+    targetId: campaignId,
+  });
+
+  return NextResponse.json({ id: campaignId, deleted: true });
+}

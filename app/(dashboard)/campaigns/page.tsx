@@ -1,6 +1,6 @@
 import { CalendarRange, ClipboardList, ListChecks, UserPlus } from "lucide-react";
 
-import { CampaignForm } from "@/components/campaign/CampaignForm";
+import { CampaignForm, DeleteCampaignButton } from "@/components/campaign/CampaignForm";
 import { CampaignUserForm } from "@/components/campaign/CampaignUserForm";
 import { DataTable } from "@/components/data/DataTable";
 import { EmptyState } from "@/components/data/EmptyState";
@@ -14,6 +14,7 @@ export default async function CampaignsPage() {
   const session = await requireRole(["MEDECIN", "INFIRMIER_TECH"]);
   const state = await getStorageAdapter().readState();
   const latestCampaign = state.campaigns.at(-1);
+  const isDoctor = session.user.role === "MEDECIN";
 
   return (
     <div className="space-y-6">
@@ -28,7 +29,7 @@ export default async function CampaignsPage() {
         icon={CalendarRange}
         description="Definissez la periode et le libelle de la campagne"
       >
-        {session.user.role === "MEDECIN" ? (
+        {isDoctor ? (
           <CampaignForm />
         ) : (
           <p className="text-sm text-muted-foreground">Lecture seule pour ce role.</p>
@@ -41,7 +42,7 @@ export default async function CampaignsPage() {
           icon={UserPlus}
           description="Mots de passe temporaires envoyes par email"
         >
-          {session.user.role === "MEDECIN" ? (
+          {isDoctor ? (
             <CampaignUserForm campaignId={latestCampaign.id} />
           ) : (
             <p className="text-sm text-muted-foreground">Lecture seule pour ce role.</p>
@@ -57,11 +58,15 @@ export default async function CampaignsPage() {
               { key: "startsAt", label: "Debut" },
               { key: "endsAt", label: "Fin" },
               { key: "status", label: "Statut" },
+              ...(isDoctor ? [{ key: "actions" as const, label: "Actions" }] : []),
             ]}
             data={state.campaigns.map((campaign) => ({
               ...campaign,
               startsAt: formatDateFr(campaign.startsAt),
               endsAt: formatDateFr(campaign.endsAt),
+              actions: isDoctor ? (
+                <DeleteCampaignButton campaignId={campaign.id} campaignName={campaign.name} />
+              ) : undefined,
             }))}
           />
         ) : (
