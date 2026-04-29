@@ -1,4 +1,4 @@
-import { head, put } from "@vercel/blob";
+import { get, put } from "@vercel/blob";
 
 import { EMPTY_STATE, type StorageAdapter } from "@/lib/storage/storage-adapter";
 import type { AppState } from "@/lib/types/domain";
@@ -24,18 +24,23 @@ export class BlobStorageAdapter implements StorageAdapter {
     }
 
     try {
-      const descriptor = await head(STATE_BLOB_PATH, {
+      const result = await get(STATE_BLOB_PATH, {
+        access: "private",
+        useCache: false,
         token,
       });
-      const response = await fetch(descriptor.url, { cache: "no-store" });
-
-      if (!response.ok) {
+      if (!result || result.statusCode !== 200 || !result.stream) {
         return cloneState(EMPTY_STATE);
       }
-
+      const response = new Response(result.stream);
       const payload = (await response.json()) as AppState;
       return payload;
-    } catch {
+    } catch (error) {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("Blob read failed in production. Check BLOB_READ_WRITE_TOKEN and blob permissions.", {
+          cause: error,
+        });
+      }
       return cloneState(EMPTY_STATE);
     }
   }
