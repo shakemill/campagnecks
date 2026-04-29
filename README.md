@@ -18,6 +18,7 @@ Copier `.env.example` vers `.env.local` et renseigner:
 
 - `AUTH_SECRET`
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+- `APP_BASE_URL` (ex: `https://campagnecks.vercel.app`, pour les liens de connexion dans les emails)
 - `BLOB_READ_WRITE_TOKEN`
 
 ### Persistance Vercel Blob (production)

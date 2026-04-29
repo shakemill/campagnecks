@@ -1,4 +1,5 @@
 import { ClipboardList, Info, LayoutDashboard, Stethoscope, Users } from "lucide-react";
+import Link from "next/link";
 
 import { DataCard } from "@/components/ui/DataCard";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -43,6 +44,47 @@ export default async function AdminPage() {
         <p className="text-sm text-muted-foreground">
           Plateforme de digitalisation des depistages MCV pour Plenitude Clinique Kouam Samuel.
         </p>
+      </DataCard>
+
+      <DataCard title="Acces rapides" icon={LayoutDashboard} description="Liens directs vers les modules operatoires">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <Link
+            href="/campaigns"
+            className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
+          >
+            Gerer les campagnes
+          </Link>
+          <Link
+            href="/screenings/new"
+            className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
+          >
+            Nouvelle fiche de depistage
+          </Link>
+          <Link
+            href="/screenings"
+            className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
+          >
+            Historique des fiches
+          </Link>
+          <Link
+            href="/patients"
+            className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
+          >
+            Module patients
+          </Link>
+          <Link
+            href="/visites"
+            className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
+          >
+            Module visites
+          </Link>
+          <Link
+            href="/facturation"
+            className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
+          >
+            Module facturation
+          </Link>
+        </div>
       </DataCard>
     </div>
   );
