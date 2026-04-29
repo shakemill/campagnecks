@@ -95,3 +95,45 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json({ id: campaignId, deleted: true });
 }
+
+export async function PATCH(request: NextRequest) {
+  const guard = await requireApiRole(["MEDECIN"]);
+  if (guard.response) {
+    return guard.response;
+  }
+
+  const campaignId = request.nextUrl.searchParams.get("id")?.trim();
+  const action = request.nextUrl.searchParams.get("action")?.trim();
+  if (!campaignId || !action) {
+    return NextResponse.json({ message: "Identifiant campagne et action requis." }, { status: 400 });
+  }
+  if (action !== "close") {
+    return NextResponse.json({ message: "Action non supportee." }, { status: 400 });
+  }
+
+  const storage = getStorageAdapter();
+  const state = await storage.readState();
+  const campaign = state.campaigns.find((item) => item.id === campaignId);
+  if (!campaign) {
+    return NextResponse.json({ message: "Campagne introuvable." }, { status: 404 });
+  }
+  if (campaign.status === "ARCHIVED") {
+    return NextResponse.json({ message: "Cette campagne est deja cloturee." }, { status: 409 });
+  }
+
+  await storage.patchState((draft) => {
+    const index = draft.campaigns.findIndex((item) => item.id === campaignId);
+    if (index >= 0) {
+      draft.campaigns[index] = { ...draft.campaigns[index], status: "ARCHIVED" };
+    }
+  });
+
+  await logAuditEvent({
+    actorUserId: guard.session.user.id,
+    action: "CLOSE_CAMPAIGN",
+    targetType: "CAMPAIGN",
+    targetId: campaignId,
+  });
+
+  return NextResponse.json({ id: campaignId, status: "ARCHIVED" });
+}

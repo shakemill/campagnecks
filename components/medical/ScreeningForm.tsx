@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   CalendarClock,
   ClipboardCheck,
+  FilePlus2,
   HeartHandshake,
   Loader2,
   ShieldCheck,
@@ -31,11 +32,18 @@ import type { ScreeningRecord, UserRole } from "@/lib/types/domain";
 type ScreeningFormProps = {
   role: UserRole;
   campaignId: string;
+  campaigns?: Array<{ id: string; name: string; status: "ACTIVE" | "DRAFT" | "ARCHIVED" }>;
   screeningId?: string;
   initialRecord?: ScreeningRecord;
 };
 
-export function ScreeningForm({ role, campaignId, screeningId, initialRecord }: ScreeningFormProps) {
+export function ScreeningForm({
+  role,
+  campaignId,
+  campaigns = [],
+  screeningId,
+  initialRecord,
+}: ScreeningFormProps) {
   const router = useRouter();
   const doctorOnlySectionLocked = role === "INFIRMIER_TECH";
   const form = useForm<ScreeningFormInput>({
@@ -161,6 +169,30 @@ export function ScreeningForm({ role, campaignId, screeningId, initialRecord }: 
       aria-busy={isSubmitting}
     >
       <fieldset disabled={isSubmitting} className="contents">
+        {!initialRecord ? (
+          <section className="soft-card space-y-3 p-4">
+            <SectionHeader
+              icon={FilePlus2}
+              title="Campagne cible"
+              description="Selectionnez la campagne correspondante avant creation de la fiche"
+            />
+            <div className="space-y-1">
+              <Label>Campagne</Label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink focus-visible:ring-offset-2"
+                {...form.register("campaignId")}
+              >
+                {campaigns.map((item) => (
+                  <option key={item.id} value={item.id} disabled={item.status !== "ACTIVE"}>
+                    {item.name}
+                    {item.status === "ARCHIVED" ? " (cloturee)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </section>
+        ) : null}
+
         <section className="soft-card space-y-3 p-4">
           <SectionHeader icon={UserRound} title="I. Identification du patient" />
           {initialRecord ? (

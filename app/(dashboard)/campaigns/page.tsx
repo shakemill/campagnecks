@@ -1,6 +1,6 @@
 import { CalendarRange, ClipboardList, ListChecks, UserPlus } from "lucide-react";
 
-import { CampaignForm, DeleteCampaignButton } from "@/components/campaign/CampaignForm";
+import { CampaignForm, CloseCampaignButton, DeleteCampaignButton } from "@/components/campaign/CampaignForm";
 import { CampaignUserForm } from "@/components/campaign/CampaignUserForm";
 import { DataTable } from "@/components/data/DataTable";
 import { EmptyState } from "@/components/data/EmptyState";
@@ -65,7 +65,14 @@ export default async function CampaignsPage() {
               startsAt: formatDateFr(campaign.startsAt),
               endsAt: formatDateFr(campaign.endsAt),
               actions: isDoctor ? (
-                <DeleteCampaignButton campaignId={campaign.id} campaignName={campaign.name} />
+                <div className="flex flex-wrap gap-1.5">
+                  <CloseCampaignButton
+                    campaignId={campaign.id}
+                    campaignName={campaign.name}
+                    disabled={campaign.status === "ARCHIVED"}
+                  />
+                  <DeleteCampaignButton campaignId={campaign.id} campaignName={campaign.name} />
+                </div>
               ) : undefined,
             }))}
           />

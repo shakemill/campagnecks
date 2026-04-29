@@ -33,6 +33,22 @@ export async function POST(request: NextRequest) {
   const storage = getStorageAdapter();
   const state = await storage.readState();
   const existing = state.screenings.find((item) => item.id === raw.id) ?? null;
+  const selectedCampaign = state.campaigns.find((item) => item.id === parsed.data.campaignId);
+  if (!selectedCampaign) {
+    return NextResponse.json({ message: "Campagne introuvable." }, { status: 400 });
+  }
+  if (!existing && selectedCampaign.status !== "ACTIVE") {
+    return NextResponse.json(
+      { message: "Creation impossible: la campagne selectionnee est cloturee." },
+      { status: 409 },
+    );
+  }
+  if (existing && existing.campaignId !== parsed.data.campaignId) {
+    return NextResponse.json(
+      { message: "Modification impossible: la campagne de la fiche ne peut pas etre changee." },
+      { status: 409 },
+    );
+  }
   const sequence = state.screenings.length + 1;
   const now = new Date().toISOString();
   const actor = state.campaignUsers.find((item) => item.id === guard.session.user.id);

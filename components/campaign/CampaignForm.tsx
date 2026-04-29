@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarRange, Loader2, PlusCircle, Trash2 } from "lucide-react";
+import { CalendarRange, Loader2, Lock, PlusCircle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -89,6 +89,12 @@ type DeleteCampaignButtonProps = {
   campaignName: string;
 };
 
+type CloseCampaignButtonProps = {
+  campaignId: string;
+  campaignName: string;
+  disabled?: boolean;
+};
+
 export function DeleteCampaignButton({ campaignId, campaignName }: DeleteCampaignButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -131,6 +137,53 @@ export function DeleteCampaignButton({ campaignId, campaignName }: DeleteCampaig
     >
       {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
       Supprimer
+    </Button>
+  );
+}
+
+export function CloseCampaignButton({ campaignId, campaignName, disabled }: CloseCampaignButtonProps) {
+  const router = useRouter();
+  const [isClosing, setIsClosing] = useState(false);
+
+  const onCloseCampaign = async () => {
+    const confirmed = window.confirm(
+      `Cloturer la campagne "${campaignName}" ? Apres cloture, aucune nouvelle fiche ne pourra etre creee.`,
+    );
+    if (!confirmed || isClosing || disabled) return;
+
+    setIsClosing(true);
+    try {
+      const response = await fetch(
+        `/api/campaigns?id=${encodeURIComponent(campaignId)}&action=close`,
+        { method: "PATCH" },
+      );
+      const payload = (await response.json().catch(() => ({}))) as { message?: string };
+      if (!response.ok) {
+        toast.error(payload.message ?? "Cloture de campagne impossible.");
+        return;
+      }
+      toast.success("Campagne cloturee.");
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur reseau lors de la cloture.");
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      disabled={disabled || isClosing}
+      onClick={onCloseCampaign}
+      className="gap-1.5 border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-700"
+      aria-label={`Cloturer la campagne ${campaignName}`}
+    >
+      {isClosing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
+      Cloturer
     </Button>
   );
 }

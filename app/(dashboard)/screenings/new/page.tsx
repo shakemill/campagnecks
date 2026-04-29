@@ -9,11 +9,15 @@ import { getStorageAdapter } from "@/lib/storage/storage-adapter";
 export default async function NewScreeningPage() {
   const session = await requireRole(["MEDECIN", "INFIRMIER_TECH"]);
   const state = await getStorageAdapter().readState();
-  const latestCampaign = state.campaigns.at(-1);
+  const activeCampaigns = state.campaigns.filter((item) => item.status === "ACTIVE");
+  const latestCampaign = activeCampaigns.at(-1);
 
   if (!latestCampaign) {
     return (
-      <AlertBanner type="warning" message="Creez d'abord une campagne avant de saisir une fiche." />
+      <AlertBanner
+        type="warning"
+        message="Aucune campagne active. Le medecin doit creer ou reouvrir une campagne avant la saisie."
+      />
     );
   }
 
@@ -22,9 +26,13 @@ export default async function NewScreeningPage() {
       <PageHeader
         icon={FilePlus2}
         title="Nouvelle fiche de depistage"
-        subtitle={`Campagne: ${latestCampaign.name}`}
+        subtitle={`Campagne par defaut: ${latestCampaign.name}`}
       />
-      <ScreeningForm role={session.user.role} campaignId={latestCampaign.id} />
+      <ScreeningForm
+        role={session.user.role}
+        campaignId={latestCampaign.id}
+        campaigns={activeCampaigns}
+      />
     </div>
   );
 }
