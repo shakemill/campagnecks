@@ -1,5 +1,6 @@
 import { Controller, type Control } from "react-hook-form";
 
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ScreeningFormInput } from "@/lib/schemas/screening-form";
 
@@ -20,6 +21,8 @@ type AdviceField =
 type HygienoDietChecklistProps = {
   control: Control<ScreeningFormInput>;
   disabled?: boolean;
+  onCheckAll?: () => void;
+  onUncheckAll?: () => void;
 };
 
 const adviceItems: Array<{ key: AdviceField; label: string }> = [
@@ -37,12 +40,27 @@ const adviceItems: Array<{ key: AdviceField; label: string }> = [
   { key: "consultIfHighRisk", label: "Consulter rapidement si risque eleve" },
 ];
 
-export function HygienoDietChecklist({ control, disabled }: HygienoDietChecklistProps) {
+export function HygienoDietChecklist({
+  control,
+  disabled,
+  onCheckAll,
+  onUncheckAll,
+}: HygienoDietChecklistProps) {
   return (
     <div className="grid gap-2 rounded-lg border bg-surface-muted/40 p-3">
-      <h3 className="font-heading text-sm font-semibold text-brand-gray">
-        VOTRE COEUR EST PRECIEUX : 5 REFLEXES POUR LE PROTEGER
-      </h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-heading text-sm font-semibold text-brand-gray">
+          VOTRE COEUR EST PRECIEUX : 5 REFLEXES POUR LE PROTEGER
+        </h3>
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={onCheckAll}>
+            Cocher tout
+          </Button>
+          <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={onUncheckAll}>
+            Tout decocher
+          </Button>
+        </div>
+      </div>
       {adviceItems.map((item) => (
         <Controller
           key={item.key}

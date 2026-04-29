@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -72,13 +73,13 @@ export function ScreeningForm({ role, campaignId, screeningId, initialRecord }: 
             ongoingTreatment: "",
           },
           vitalsBiology: {
-            bloodPressureRight: { systolic: 120, diastolic: 80 },
-            bloodPressureLeft: { systolic: 120, diastolic: 80 },
-            weightKg: 70,
-            heightCm: 170,
-            bmi: 24.2,
-            waistCm: 85,
-            fastingGlucoseGl: 1,
+            bloodPressureRight: { systolic: Number.NaN, diastolic: Number.NaN },
+            bloodPressureLeft: { systolic: Number.NaN, diastolic: Number.NaN },
+            weightKg: Number.NaN,
+            heightCm: Number.NaN,
+            bmi: Number.NaN,
+            waistCm: Number.NaN,
+            fastingGlucoseGl: Number.NaN,
           },
           interpretation: { labels: [], other: "" },
           cardiovascularRisk: { enabled: false, level: "FAIBLE", scoreNote: "" },
@@ -102,6 +103,20 @@ export function ScreeningForm({ role, campaignId, screeningId, initialRecord }: 
   });
 
   const isSubmitting = form.formState.isSubmitting;
+  const weightKg = form.watch("vitalsBiology.weightKg");
+  const heightCm = form.watch("vitalsBiology.heightCm");
+
+  useEffect(() => {
+    const hasWeight = Number.isFinite(weightKg) && weightKg > 0;
+    const hasHeight = Number.isFinite(heightCm) && heightCm > 0;
+    if (!hasWeight || !hasHeight) {
+      form.setValue("vitalsBiology.bmi", Number.NaN, { shouldDirty: true });
+      return;
+    }
+    const heightM = heightCm / 100;
+    const bmi = Number((weightKg / (heightM * heightM)).toFixed(1));
+    form.setValue("vitalsBiology.bmi", bmi, { shouldDirty: true });
+  }, [form, heightCm, weightKg]);
 
   const submitForm = async (values: ScreeningFormInput) => {
     try {
@@ -417,8 +432,10 @@ export function ScreeningForm({ role, campaignId, screeningId, initialRecord }: 
               <Input
                 type="number"
                 step="0.1"
+                readOnly
                 {...form.register("vitalsBiology.bmi", { valueAsNumber: true })}
               />
+              <p className="text-xs text-muted-foreground">Calcule automatiquement selon poids et taille.</p>
             </div>
             <div className="space-y-1">
               <Label>Tour de taille (cm)</Label>
@@ -602,7 +619,48 @@ export function ScreeningForm({ role, campaignId, screeningId, initialRecord }: 
             title="Conseils hygieno-dietetiques"
             description="5 reflexes pour proteger votre coeur"
           />
-          <HygienoDietChecklist control={form.control} disabled={doctorOnlySectionLocked} />
+          <HygienoDietChecklist
+            control={form.control}
+            disabled={doctorOnlySectionLocked}
+            onCheckAll={() => {
+              const keys = [
+                "reduceSaltBouillon",
+                "reduceSaltMeals",
+                "avoidProcessedFood",
+                "avoidSedentaryLifestyle",
+                "activity30mFiveDays",
+                "addVegetables",
+                "eatFruitsRegularly",
+                "replaceSugaryDrinks",
+                "stopSmoking",
+                "reduceAlcohol",
+                "monitorBloodPressureWeightSugar",
+                "consultIfHighRisk",
+              ] as const;
+              for (const key of keys) {
+                form.setValue(`hygienoDietAdvice.${key}`, true, { shouldDirty: true });
+              }
+            }}
+            onUncheckAll={() => {
+              const keys = [
+                "reduceSaltBouillon",
+                "reduceSaltMeals",
+                "avoidProcessedFood",
+                "avoidSedentaryLifestyle",
+                "activity30mFiveDays",
+                "addVegetables",
+                "eatFruitsRegularly",
+                "replaceSugaryDrinks",
+                "stopSmoking",
+                "reduceAlcohol",
+                "monitorBloodPressureWeightSugar",
+                "consultIfHighRisk",
+              ] as const;
+              for (const key of keys) {
+                form.setValue(`hygienoDietAdvice.${key}`, false, { shouldDirty: true });
+              }
+            }}
+          />
         </section>
       </fieldset>
 
