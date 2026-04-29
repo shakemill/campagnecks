@@ -1,0 +1,623 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Activity,
+  AlertTriangle,
+  CalendarClock,
+  ClipboardCheck,
+  HeartHandshake,
+  Loader2,
+  ShieldCheck,
+  Stethoscope,
+  UserRound,
+  Users,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+import { HygienoDietChecklist } from "@/components/medical/HygienoDietChecklist";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { Textarea } from "@/components/ui/textarea";
+import { screeningFormSchema, type ScreeningFormInput } from "@/lib/schemas/screening-form";
+import type { ScreeningRecord, UserRole } from "@/lib/types/domain";
+
+type ScreeningFormProps = {
+  role: UserRole;
+  campaignId: string;
+  screeningId?: string;
+  initialRecord?: ScreeningRecord;
+};
+
+export function ScreeningForm({ role, campaignId, screeningId, initialRecord }: ScreeningFormProps) {
+  const router = useRouter();
+  const doctorOnlySectionLocked = role === "INFIRMIER_TECH";
+  const form = useForm<ScreeningFormInput>({
+    resolver: zodResolver(screeningFormSchema),
+    defaultValues: initialRecord
+      ? {
+          campaignId: initialRecord.campaignId,
+          patient: initialRecord.patient,
+          riskFactors: initialRecord.riskFactors,
+          vitalsBiology: initialRecord.vitalsBiology,
+          interpretation: initialRecord.interpretation,
+          cardiovascularRisk: initialRecord.cardiovascularRisk,
+          orientationDecision: initialRecord.orientationDecision,
+          staffIdentity: initialRecord.staffIdentity,
+          hygienoDietAdvice: initialRecord.hygienoDietAdvice,
+        }
+      : {
+          campaignId,
+          patient: {
+            date: new Date().toISOString().slice(0, 10),
+            fullName: "",
+            age: 40,
+            sex: "M",
+            residence: "",
+            profession: "",
+            phone1: "",
+            phone2: "",
+          },
+          riskFactors: {
+            smoking: "NON",
+            alcohol: "JAMAIS",
+            physicalActivity: "JAMAIS",
+            personalHistory: [],
+            familyHistory: [],
+            ongoingTreatment: "",
+          },
+          vitalsBiology: {
+            bloodPressureRight: { systolic: 120, diastolic: 80 },
+            bloodPressureLeft: { systolic: 120, diastolic: 80 },
+            weightKg: 70,
+            heightCm: 170,
+            bmi: 24.2,
+            waistCm: 85,
+            fastingGlucoseGl: 1,
+          },
+          interpretation: { labels: [], other: "" },
+          cardiovascularRisk: { enabled: false, level: "FAIBLE", scoreNote: "" },
+          orientationDecision: { items: [], other: "", followUpDate: "", followUpTime: "" },
+          staffIdentity: { nurseName: "", doctorName: "" },
+          hygienoDietAdvice: {
+            reduceSaltBouillon: false,
+            reduceSaltMeals: false,
+            avoidProcessedFood: false,
+            avoidSedentaryLifestyle: false,
+            activity30mFiveDays: false,
+            addVegetables: false,
+            eatFruitsRegularly: false,
+            replaceSugaryDrinks: false,
+            stopSmoking: false,
+            reduceAlcohol: false,
+            monitorBloodPressureWeightSugar: false,
+            consultIfHighRisk: false,
+          },
+        },
+  });
+
+  const isSubmitting = form.formState.isSubmitting;
+
+  const submitForm = async (values: ScreeningFormInput) => {
+    try {
+      const response = await fetch("/api/screenings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...values,
+          id: screeningId,
+        }),
+      });
+
+      if (!response.ok) {
+        toast.error("Echec de sauvegarde de la fiche.");
+        return;
+      }
+
+      const data = (await response.json()) as { id: string };
+      toast.success("Fiche enregistree.");
+
+      if (role === "MEDECIN") {
+        const validateRes = await fetch(`/api/screenings/${data.id}/validate`, { method: "POST" });
+        if (validateRes.ok) {
+          toast.success("Validation medicale et generation PDF declenchees.");
+        } else {
+          toast.error("Validation impossible. Reessayez.");
+        }
+      }
+
+      router.push("/screenings");
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      toast.error("Une erreur reseau est survenue.");
+    }
+  };
+
+  return (
+    <form
+      onSubmit={form.handleSubmit(submitForm)}
+      className="space-y-6"
+      aria-busy={isSubmitting}
+    >
+      <fieldset disabled={isSubmitting} className="contents">
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader icon={UserRound} title="I. Identification du patient" />
+          {initialRecord ? (
+            <p className="rounded-md bg-surface-muted px-3 py-2 text-xs text-muted-foreground">
+              N d&apos;enregistrement: {initialRecord.registrationNumber}
+            </p>
+          ) : null}
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-1">
+              <Label>Date</Label>
+              <Input type="date" {...form.register("patient.date")} />
+            </div>
+            <div className="space-y-1">
+              <Label>Nom et prenom</Label>
+              <Input {...form.register("patient.fullName")} />
+            </div>
+            <div className="space-y-1">
+              <Label>Age</Label>
+              <Input type="number" {...form.register("patient.age", { valueAsNumber: true })} />
+            </div>
+            <div className="space-y-1">
+              <Label>Residence</Label>
+              <Input {...form.register("patient.residence")} />
+            </div>
+            <div className="space-y-1">
+              <Label>Profession</Label>
+              <Input {...form.register("patient.profession")} />
+            </div>
+            <div className="space-y-1">
+              <Label>Telephone principal</Label>
+              <Input {...form.register("patient.phone1")} />
+            </div>
+            <div className="space-y-1">
+              <Label>Telephone secondaire</Label>
+              <Input {...form.register("patient.phone2")} />
+            </div>
+            <div className="space-y-1 md:col-span-2">
+              <Label>Sexe</Label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="radio" value="M" {...form.register("patient.sex")} />
+                  Masculin
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="radio" value="F" {...form.register("patient.sex")} />
+                  Feminin
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader
+            icon={AlertTriangle}
+            title="II. Facteurs de risque et antecedents"
+          />
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>Tabagisme</Label>
+              <div className="flex flex-wrap gap-4">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    value="NON"
+                    disabled={doctorOnlySectionLocked}
+                    {...form.register("riskFactors.smoking")}
+                  />
+                  Non
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    value="FUMEUR_ACTIF"
+                    disabled={doctorOnlySectionLocked}
+                    {...form.register("riskFactors.smoking")}
+                  />
+                  Fumeur actif
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    value="ANCIEN_FUMEUR"
+                    disabled={doctorOnlySectionLocked}
+                    {...form.register("riskFactors.smoking")}
+                  />
+                  Ancien fumeur
+                </label>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <Label>PA (pack-years)</Label>
+                  <Input
+                    type="number"
+                    disabled={doctorOnlySectionLocked}
+                    {...form.register("riskFactors.packYears", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Annees depuis sevrage</Label>
+                  <Input
+                    type="number"
+                    disabled={doctorOnlySectionLocked}
+                    {...form.register("riskFactors.yearsSinceQuit", { valueAsNumber: true })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Consommation d&apos;alcool</Label>
+              <div className="flex flex-wrap gap-4">
+                {[
+                  { value: "JAMAIS", label: "Jamais" },
+                  { value: "OCCASIONNELLE", label: "Occasionnelle" },
+                  { value: "REGULIERE", label: "Reguliere" },
+                ].map((option) => (
+                  <label key={option.value} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      value={option.value}
+                      disabled={doctorOnlySectionLocked}
+                      {...form.register("riskFactors.alcohol")}
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Activite physique (30 min)</Label>
+              <div className="flex flex-wrap gap-4">
+                {[
+                  { value: "JAMAIS", label: "Jamais" },
+                  { value: "LT_5_SEMAINE", label: "< 5 fois/semaine" },
+                  { value: "GT_5_SEMAINE", label: "> 5 fois/semaine" },
+                ].map((option) => (
+                  <label key={option.value} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      value={option.value}
+                      disabled={doctorOnlySectionLocked}
+                      {...form.register("riskFactors.physicalActivity")}
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <Controller
+              control={form.control}
+              name="riskFactors.personalHistory"
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label>Antecedents personnels</Label>
+                  <div className="grid gap-2 md:grid-cols-3">
+                    {["HTA", "DIABETE", "IRC", "AVC", "IDM"].map((item) => (
+                      <label key={item} className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          disabled={doctorOnlySectionLocked}
+                          checked={field.value.includes(item as (typeof field.value)[number])}
+                          onCheckedChange={(checked) => {
+                            const current = field.value ?? [];
+                            field.onChange(
+                              checked
+                                ? [...current, item]
+                                : current.filter((value) => value !== item),
+                            );
+                          }}
+                        />
+                        {item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="riskFactors.familyHistory"
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <Label>Antecedents familiaux</Label>
+                  <div className="grid gap-2 md:grid-cols-3">
+                    {["HTA", "DIABETE", "AVC", "IDM", "MORT_SUBITE"].map((item) => (
+                      <label key={item} className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          disabled={doctorOnlySectionLocked}
+                          checked={field.value.includes(item as (typeof field.value)[number])}
+                          onCheckedChange={(checked) => {
+                            const current = field.value ?? [];
+                            field.onChange(
+                              checked
+                                ? [...current, item]
+                                : current.filter((value) => value !== item),
+                            );
+                          }}
+                        />
+                        {item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            />
+
+            <div className="space-y-1">
+              <Label>Traitement en cours</Label>
+              <Textarea
+                disabled={doctorOnlySectionLocked}
+                {...form.register("riskFactors.ongoingTreatment")}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader icon={Activity} title="III. Constantes et biologie" />
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="space-y-1">
+              <Label>PA droite systolique</Label>
+              <Input
+                type="number"
+                {...form.register("vitalsBiology.bloodPressureRight.systolic", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>PA droite diastolique</Label>
+              <Input
+                type="number"
+                {...form.register("vitalsBiology.bloodPressureRight.diastolic", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>PA gauche systolique</Label>
+              <Input
+                type="number"
+                {...form.register("vitalsBiology.bloodPressureLeft.systolic", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>PA gauche diastolique</Label>
+              <Input
+                type="number"
+                {...form.register("vitalsBiology.bloodPressureLeft.diastolic", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Glycemie (g/L)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                {...form.register("vitalsBiology.fastingGlucoseGl", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Poids (kg)</Label>
+              <Input type="number" {...form.register("vitalsBiology.weightKg", { valueAsNumber: true })} />
+            </div>
+            <div className="space-y-1">
+              <Label>Taille (cm)</Label>
+              <Input type="number" {...form.register("vitalsBiology.heightCm", { valueAsNumber: true })} />
+            </div>
+            <div className="space-y-1">
+              <Label>IMC</Label>
+              <Input
+                type="number"
+                step="0.1"
+                {...form.register("vitalsBiology.bmi", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Tour de taille (cm)</Label>
+              <Input type="number" {...form.register("vitalsBiology.waistCm", { valueAsNumber: true })} />
+            </div>
+          </div>
+        </section>
+
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader icon={ClipboardCheck} title="IV. Interpretation globale" />
+          <Controller
+            control={form.control}
+            name="interpretation.labels"
+            render={({ field }) => (
+              <div className="grid gap-2 md:grid-cols-2">
+                {[
+                  "DEP_NORM",
+                  "HTA",
+                  "DIABETE",
+                  "PREDIABETE",
+                  "OBESITE",
+                  "SURPOIDS",
+                  "OBESITE_ABDOMINALE",
+                ].map((item) => (
+                  <label key={item} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      disabled={doctorOnlySectionLocked}
+                      checked={field.value.includes(item)}
+                      onCheckedChange={(checked) => {
+                        const current = field.value ?? [];
+                        field.onChange(
+                          checked ? [...current, item] : current.filter((value) => value !== item),
+                        );
+                      }}
+                    />
+                    {item}
+                  </label>
+                ))}
+              </div>
+            )}
+          />
+          <Textarea
+            disabled={doctorOnlySectionLocked}
+            {...form.register("interpretation.other")}
+            placeholder="Autre interpretation..."
+          />
+        </section>
+
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader
+            icon={ShieldCheck}
+            title="V. Evaluation du risque cardiovasculaire"
+            description="Patients de 40 ans ou plus (SCORE OMS)"
+          />
+          <Controller
+            control={form.control}
+            name="cardiovascularRisk.enabled"
+            render={({ field }) => (
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  disabled={doctorOnlySectionLocked}
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                />
+                Evaluation activee (patients &gt;= 40 ans)
+              </label>
+            )}
+          />
+          <div className="grid gap-2 md:grid-cols-2">
+            {[
+              { value: "FAIBLE", label: "Risque faible (<5%)" },
+              { value: "MODERE", label: "Risque modere (5-10%)" },
+              { value: "ELEVE", label: "Risque eleve (10-20%)" },
+              { value: "TRES_ELEVE", label: "Risque tres eleve (20-30%)" },
+              { value: "TRES_TRES_ELEVE", label: "Risque tres tres eleve (&gt;=30%)" },
+            ].map((option) => (
+              <label key={option.value} className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  value={option.value}
+                  disabled={doctorOnlySectionLocked}
+                  {...form.register("cardiovascularRisk.level")}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+          <Textarea
+            disabled={doctorOnlySectionLocked}
+            {...form.register("cardiovascularRisk.scoreNote")}
+            placeholder="Note SCORE OMS..."
+          />
+        </section>
+
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader
+            icon={Stethoscope}
+            title="VI. Orientation et decision medicale"
+          />
+          <Controller
+            control={form.control}
+            name="orientationDecision.items"
+            render={({ field }) => (
+              <div className="grid gap-2">
+                {[
+                  "Risque faible sans HTA",
+                  "Risque modere sans HTA",
+                  "Hypertension arterielle",
+                  "Risque eleve",
+                  "Risque tres eleve",
+                  "Risque tres tres eleve",
+                ].map((item) => (
+                  <label key={item} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      disabled={doctorOnlySectionLocked}
+                      checked={field.value.includes(item)}
+                      onCheckedChange={(checked) => {
+                        const current = field.value ?? [];
+                        field.onChange(
+                          checked ? [...current, item] : current.filter((value) => value !== item),
+                        );
+                      }}
+                    />
+                    {item}
+                  </label>
+                ))}
+              </div>
+            )}
+          />
+          <Textarea
+            disabled={doctorOnlySectionLocked}
+            {...form.register("orientationDecision.other")}
+            placeholder="Autre orientation..."
+          />
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="flex items-center gap-2">
+                <CalendarClock className="h-4 w-4" />
+                Rendez-vous de controle (date)
+              </Label>
+              <Input
+                type="date"
+                disabled={doctorOnlySectionLocked}
+                {...form.register("orientationDecision.followUpDate")}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Heure</Label>
+              <Input
+                type="time"
+                disabled={doctorOnlySectionLocked}
+                {...form.register("orientationDecision.followUpTime")}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader icon={Users} title="VII. Identification du personnel" />
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-1">
+              <Label>Infirmier(ere)</Label>
+              <Input
+                disabled={doctorOnlySectionLocked}
+                {...form.register("staffIdentity.nurseName")}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Medecin</Label>
+              <Input
+                disabled={doctorOnlySectionLocked}
+                {...form.register("staffIdentity.doctorName")}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="soft-card space-y-3 p-4">
+          <SectionHeader
+            icon={HeartHandshake}
+            title="Conseils hygieno-dietetiques"
+            description="5 reflexes pour proteger votre coeur"
+          />
+          <HygienoDietChecklist control={form.control} disabled={doctorOnlySectionLocked} />
+        </section>
+      </fieldset>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={isSubmitting} className="gap-2">
+          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {isSubmitting
+            ? "Traitement en cours..."
+            : doctorOnlySectionLocked
+              ? "Enregistrer"
+              : initialRecord
+                ? "Completer, valider et generer PDF"
+                : "Valider et generer PDF"}
+        </Button>
+      </div>
+    </form>
+  );
+}
