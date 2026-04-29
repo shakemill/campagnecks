@@ -12,14 +12,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { campaignUserSchema, type CampaignUserInput } from "@/lib/schemas/campaign";
 
 type CampaignUserFormProps = {
-  campaignId: string;
+  campaigns: Array<{ id: string; name: string; status: "ACTIVE" | "DRAFT" | "ARCHIVED" }>;
 };
 
-export function CampaignUserForm({ campaignId }: CampaignUserFormProps) {
+export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
+  const selectableCampaigns = campaigns.filter((item) => item.status === "ACTIVE");
+  const defaultCampaignId = selectableCampaigns[0]?.id ?? "";
   const form = useForm<CampaignUserInput>({
     resolver: zodResolver(campaignUserSchema),
     defaultValues: {
-      campaignId,
+      campaignId: defaultCampaignId,
       firstName: "",
       lastName: "",
       title: "Dr",
@@ -53,6 +55,30 @@ export function CampaignUserForm({ campaignId }: CampaignUserFormProps) {
     <form onSubmit={form.handleSubmit(submit)} className="space-y-3" aria-busy={isSubmitting}>
       <fieldset disabled={isSubmitting} className="contents">
         <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-1 md:col-span-2">
+            <Label>Campagne liee</Label>
+            <Controller
+              control={form.control}
+              name="campaignId"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selectionner une campagne active" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectableCampaigns.map((campaign) => (
+                      <SelectItem key={campaign.id} value={campaign.id}>
+                        {campaign.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {!selectableCampaigns.length ? (
+              <p className="text-xs text-amber-700">Aucune campagne active disponible.</p>
+            ) : null}
+          </div>
           <div className="space-y-1">
             <Label>Prenom</Label>
             <Input {...form.register("firstName")} />
@@ -107,7 +133,7 @@ export function CampaignUserForm({ campaignId }: CampaignUserFormProps) {
           </div>
         </div>
       </fieldset>
-      <Button type="submit" disabled={isSubmitting} className="gap-2">
+      <Button type="submit" disabled={isSubmitting || !selectableCampaigns.length} className="gap-2">
         {isSubmitting ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (

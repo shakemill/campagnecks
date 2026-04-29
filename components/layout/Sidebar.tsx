@@ -6,6 +6,7 @@ import {
   HeartPulse,
   LayoutDashboard,
   Stethoscope,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +28,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/campaigns", label: "Campagnes", icon: ClipboardList },
+  { href: "/users", label: "Utilisateurs", icon: Users },
   { href: "/screenings/new", label: "Nouvelle fiche", icon: FilePlus2 },
   { href: "/screenings", label: "Fiches", icon: Stethoscope },
 ];

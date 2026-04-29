@@ -1,7 +1,6 @@
-import { CalendarRange, ClipboardList, ListChecks, UserPlus } from "lucide-react";
+import { CalendarRange, ClipboardList, ListChecks } from "lucide-react";
 
 import { CampaignForm, CloseCampaignButton, DeleteCampaignButton } from "@/components/campaign/CampaignForm";
-import { CampaignUserForm } from "@/components/campaign/CampaignUserForm";
 import { DataTable } from "@/components/data/DataTable";
 import { EmptyState } from "@/components/data/EmptyState";
 import { DataCard } from "@/components/ui/DataCard";
@@ -13,7 +12,6 @@ import { formatDateFr } from "@/lib/utils";
 export default async function CampaignsPage() {
   const session = await requireRole(["MEDECIN", "INFIRMIER_TECH"]);
   const state = await getStorageAdapter().readState();
-  const latestCampaign = state.campaigns.at(-1);
   const isDoctor = session.user.role === "MEDECIN";
 
   return (
@@ -35,20 +33,6 @@ export default async function CampaignsPage() {
           <p className="text-sm text-muted-foreground">Lecture seule pour ce role.</p>
         )}
       </DataCard>
-
-      {latestCampaign ? (
-        <DataCard
-          title="Creation des comptes d'acces"
-          icon={UserPlus}
-          description="Mots de passe temporaires envoyes par email"
-        >
-          {isDoctor ? (
-            <CampaignUserForm campaignId={latestCampaign.id} />
-          ) : (
-            <p className="text-sm text-muted-foreground">Lecture seule pour ce role.</p>
-          )}
-        </DataCard>
-      ) : null}
 
       <DataCard title="Campagnes enregistrees" icon={ListChecks}>
         {state.campaigns.length ? (
