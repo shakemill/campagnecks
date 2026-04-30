@@ -4,6 +4,7 @@ import { requireApiRole } from "@/lib/auth/api-guard";
 import { logAuditEvent } from "@/lib/audit/audit-log";
 import { screeningFormSchema } from "@/lib/schemas/screening-form";
 import { defaultChecklist } from "@/lib/screenings/defaults";
+import { buildVitalsGuidance } from "@/lib/medical/vitals-guidance";
 import { mergeRecordByRole } from "@/lib/screenings/merge-by-role";
 import { getStorageAdapter } from "@/lib/storage/storage-adapter";
 import { generateId, generateRegistrationNumber } from "@/lib/utils/id";
@@ -83,13 +84,15 @@ export async function POST(request: NextRequest) {
   };
 
   const merged = mergeRecordByRole(guard.session.user.role, existing, incoming);
+  const vitalsGuidance = buildVitalsGuidance(merged);
+  const mergedWithGuidance = { ...merged, vitalsGuidance };
 
   await storage.patchState((draft) => {
-    const index = draft.screenings.findIndex((item) => item.id === merged.id);
+    const index = draft.screenings.findIndex((item) => item.id === mergedWithGuidance.id);
     if (index >= 0) {
-      draft.screenings[index] = merged;
+      draft.screenings[index] = mergedWithGuidance;
     } else {
-      draft.screenings.push(merged);
+      draft.screenings.push(mergedWithGuidance);
     }
   });
 
@@ -97,8 +100,8 @@ export async function POST(request: NextRequest) {
     actorUserId: guard.session.user.id,
     action: existing ? "UPDATE_SCREENING" : "CREATE_SCREENING",
     targetType: "SCREENING",
-    targetId: merged.id,
+    targetId: mergedWithGuidance.id,
   });
 
-  return NextResponse.json(merged, { status: existing ? 200 : 201 });
+  return NextResponse.json(mergedWithGuidance, { status: existing ? 200 : 201 });
 }

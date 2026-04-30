@@ -92,11 +92,15 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
 
   const rows = filteredScreenings.map((item) => {
     const isCompleted = Boolean(item.reportBlobUrl);
+    const scoreOmsEligible =
+      typeof item.patient.age === "number" &&
+      Number.isFinite(item.patient.age) &&
+      item.patient.age >= 40;
     return {
       registrationNumber: item.registrationNumber,
       patient: item.patient.fullName,
       date: formatDateFr(item.patient.date),
-      risk: item.cardiovascularRisk.level ?? "N/A",
+      risk: scoreOmsEligible ? (item.cardiovascularRisk.level ?? "N/A") : "—",
       status: isCompleted ? (
         <span className="inline-flex items-center gap-1 rounded-full bg-brand-green/10 px-2.5 py-0.5 text-xs font-medium text-brand-green">
           <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />

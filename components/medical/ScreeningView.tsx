@@ -119,6 +119,11 @@ function ChipList({ items }: { items: string[] }) {
 }
 
 export function ScreeningView({ record }: ScreeningViewProps) {
+  const showScoreOmsSection =
+    typeof record.patient.age === "number" &&
+    Number.isFinite(record.patient.age) &&
+    record.patient.age >= 40;
+
   const checkedAdvice = (
     Object.keys(ADVICE_LABEL) as Array<keyof typeof ADVICE_LABEL>
   ).filter((key) => record.hygienoDietAdvice[key]);
@@ -155,6 +160,63 @@ export function ScreeningView({ record }: ScreeningViewProps) {
     { label: "Traitement en cours", value: record.riskFactors.ongoingTreatment },
   ];
 
+  const guidanceRows: Row[] | null = record.vitalsGuidance
+    ? [
+        ...(record.vitalsGuidance.bloodPressureAvg
+          ? [
+              {
+                label: "PA moyenne (mmHg)",
+                value: `${record.vitalsGuidance.bloodPressureAvg.systolic} / ${record.vitalsGuidance.bloodPressureAvg.diastolic}`,
+              },
+              {
+                label: "Classification tensionnelle",
+                value: record.vitalsGuidance.bloodPressureAvg.classification,
+              },
+              {
+                label: "Risque cardiovasculaire (PA)",
+                value: record.vitalsGuidance.bloodPressureAvg.cardiovascularRisk,
+              },
+              {
+                label: "Action recommandee (PA)",
+                value: record.vitalsGuidance.bloodPressureAvg.action,
+              },
+            ]
+          : []),
+        ...(record.vitalsGuidance.bmi
+          ? [
+              { label: "IMC — statut", value: `${record.vitalsGuidance.bmi.value} — ${record.vitalsGuidance.bmi.weightStatus}` },
+              { label: "Intervalle IMC", value: record.vitalsGuidance.bmi.intervalLabel },
+              { label: "Risque metabolique (IMC)", value: record.vitalsGuidance.bmi.metabolicRisk },
+            ]
+          : []),
+        ...(record.vitalsGuidance.waist
+          ? [
+              {
+                label: "Tour de taille — seuil",
+                value: `${record.vitalsGuidance.waist.value} cm — ${record.vitalsGuidance.waist.thresholdLabel}`,
+              },
+              {
+                label: "Risque cardiometabolique (perimetre)",
+                value: record.vitalsGuidance.waist.cardiometabolicRisk,
+              },
+            ]
+          : []),
+        ...(record.vitalsGuidance.glucose
+          ? [
+              {
+                label: "Glycemie — statut",
+                value: `${record.vitalsGuidance.glucose.valueGPerL} g/L — ${record.vitalsGuidance.glucose.status}`,
+              },
+              { label: "Risque clinique (glycemie)", value: record.vitalsGuidance.glucose.clinicalRisk },
+            ]
+          : []),
+        {
+          label: "Synthese calculee le",
+          value: formatDateFr(record.vitalsGuidance.computedAt),
+        },
+      ]
+    : null;
+
   const vitalsRows: Row[] = [
     {
       label: "PA bras droit (mmHg)",
@@ -164,11 +226,11 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       label: "PA bras gauche (mmHg)",
       value: `${record.vitalsBiology.bloodPressureLeft.systolic} / ${record.vitalsBiology.bloodPressureLeft.diastolic}`,
     },
-    { label: "Glycemie a jeun (g/L)", value: record.vitalsBiology.fastingGlucoseGl },
     { label: "Poids (kg)", value: record.vitalsBiology.weightKg },
     { label: "Taille (cm)", value: record.vitalsBiology.heightCm },
     { label: "IMC", value: record.vitalsBiology.bmi },
     { label: "Tour de taille (cm)", value: record.vitalsBiology.waistCm },
+    { label: "Glycemie a jeun (g/L)", value: record.vitalsBiology.fastingGlucoseGl },
   ];
 
   const interpretationRows: Row[] = [
@@ -237,6 +299,14 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       <section className="soft-card space-y-4 p-4">
         <SectionHeader icon={Activity} title="III. Constantes et biologie" />
         <StripedTable rows={vitalsRows} />
+        {guidanceRows?.length ? (
+          <div className="space-y-2 pt-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Aide a l&apos;interpretation (automatique)
+            </p>
+            <StripedTable rows={guidanceRows} />
+          </div>
+        ) : null}
       </section>
 
       <section className="soft-card space-y-4 p-4">
@@ -244,22 +314,30 @@ export function ScreeningView({ record }: ScreeningViewProps) {
         <StripedTable rows={interpretationRows} />
       </section>
 
-      <section className="soft-card space-y-4 p-4">
-        <SectionHeader
-          icon={ShieldCheck}
-          title="V. Evaluation du risque cardiovasculaire"
-          description="Patients de 40 ans ou plus (SCORE OMS)"
-        />
-        <StripedTable rows={cardioRiskRows} />
-      </section>
+      {showScoreOmsSection ? (
+        <section className="soft-card space-y-4 p-4">
+          <SectionHeader
+            icon={ShieldCheck}
+            title="V. Evaluation du risque cardiovasculaire"
+            description="Patients de 40 ans ou plus (SCORE OMS)"
+          />
+          <StripedTable rows={cardioRiskRows} />
+        </section>
+      ) : null}
 
       <section className="soft-card space-y-4 p-4">
-        <SectionHeader icon={Stethoscope} title="VI. Orientation et decision medicale" />
+        <SectionHeader
+          icon={Stethoscope}
+          title={`${showScoreOmsSection ? "VI" : "V"}. Orientation et decision medicale`}
+        />
         <StripedTable rows={orientationRows} />
       </section>
 
       <section className="soft-card space-y-4 p-4">
-        <SectionHeader icon={Users} title="VII. Identification du personnel" />
+        <SectionHeader
+          icon={Users}
+          title={`${showScoreOmsSection ? "VII" : "VI"}. Identification du personnel`}
+        />
         <StripedTable rows={staffRows} />
       </section>
 

@@ -264,6 +264,37 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
   drawLine(`Glycemie a jeun: ${record.vitalsBiology.fastingGlucoseGl} g/L`);
   y -= 6;
 
+  if (record.vitalsGuidance) {
+    const vg = record.vitalsGuidance;
+    drawSectionTitle("SYNTHESE AUTOMATIQUE (CONSTANTES)");
+    drawLine(
+      "Informations derivees des mesures ci-dessus et du sexe ; aide non substitutive du jugement clinique.",
+      { size: 9, color: COLORS.muted },
+    );
+    if (vg.bloodPressureAvg) {
+      drawLine(
+        `PA moyenne (bras droit/gauche): ${vg.bloodPressureAvg.systolic}/${vg.bloodPressureAvg.diastolic} mmHg`,
+      );
+      drawLine(`Classification: ${vg.bloodPressureAvg.classification}`);
+      drawLine(`Risque cardiovasculaire: ${vg.bloodPressureAvg.cardiovascularRisk}`);
+      drawLine(`Action: ${vg.bloodPressureAvg.action}`);
+    }
+    if (vg.bmi) {
+      drawLine(`IMC: ${vg.bmi.value} kg/m2 — ${vg.bmi.weightStatus} (${vg.bmi.intervalLabel})`);
+      drawLine(`Risque metabolique: ${vg.bmi.metabolicRisk}`);
+    }
+    if (vg.waist) {
+      drawLine(`Tour de taille: ${vg.waist.value} cm — ${vg.waist.thresholdLabel}`);
+      drawLine(`Risque cardiometabolique (perimetre): ${vg.waist.cardiometabolicRisk}`);
+    }
+    if (vg.glucose) {
+      drawLine(`Glycemie a jeun: ${vg.glucose.valueGPerL} g/L — ${vg.glucose.status}`);
+      drawLine(`Risque clinique (glycemie): ${vg.glucose.clinicalRisk}`);
+    }
+    drawLine(`Synthese calculee le: ${vg.computedAt}`, { size: 9, color: COLORS.muted });
+    y -= 6;
+  }
+
   drawSectionTitle("INTERPRETATION GLOBALE");
   drawLine(
     `Interpretations cochees: ${
@@ -275,15 +306,22 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
   drawLine(`Autre interpretation: ${record.interpretation.other || "Aucune"}`);
   y -= 6;
 
-  drawSectionTitle("EVALUATION DU RISQUE CARDIOVASCULAIRE");
-  drawLine(`Evaluation activee: ${record.cardiovascularRisk.enabled ? "Oui" : "Non"}`);
-  drawLine(
-    `Niveau de risque: ${
-      record.cardiovascularRisk.level ? riskMap[record.cardiovascularRisk.level] : "Non evalue"
-    }`,
-  );
-  drawLine(`Note SCORE OMS: ${record.cardiovascularRisk.scoreNote || "Aucune"}`);
-  y -= 6;
+  const scoreOmsEligible =
+    typeof record.patient.age === "number" &&
+    Number.isFinite(record.patient.age) &&
+    record.patient.age >= 40;
+
+  if (scoreOmsEligible) {
+    drawSectionTitle("EVALUATION DU RISQUE CARDIOVASCULAIRE");
+    drawLine(`Evaluation activee: ${record.cardiovascularRisk.enabled ? "Oui" : "Non"}`);
+    drawLine(
+      `Niveau de risque: ${
+        record.cardiovascularRisk.level ? riskMap[record.cardiovascularRisk.level] : "Non evalue"
+      }`,
+    );
+    drawLine(`Note SCORE OMS: ${record.cardiovascularRisk.scoreNote || "Aucune"}`);
+    y -= 6;
+  }
 
   drawSectionTitle("ORIENTATION ET DECISION MEDICALE");
   drawLine(

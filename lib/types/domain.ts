@@ -49,6 +49,34 @@ export interface AuditLog {
   createdAt: string;
 }
 
+/** Synthèse automatique des constantes (tableaux OMS / référence clinique), non saisie manuellement. */
+export interface VitalsGuidance {
+  computedAt: string;
+  bloodPressureAvg?: {
+    systolic: number;
+    diastolic: number;
+    classification: string;
+    cardiovascularRisk: string;
+    action: string;
+  };
+  bmi?: {
+    value: number;
+    weightStatus: string;
+    intervalLabel: string;
+    metabolicRisk: string;
+  };
+  waist?: {
+    value: number;
+    thresholdLabel: string;
+    cardiometabolicRisk: string;
+  };
+  glucose?: {
+    valueGPerL: number;
+    status: string;
+    clinicalRisk: string;
+  };
+}
+
 export interface Checklist5Reflexes {
   reduceSaltBouillon: boolean;
   reduceSaltMeals: boolean;
@@ -125,6 +153,7 @@ export interface ScreeningRecord {
     doctorName?: string;
   };
   hygienoDietAdvice: Checklist5Reflexes;
+  vitalsGuidance?: VitalsGuidance;
 }
 
 export interface AppState {

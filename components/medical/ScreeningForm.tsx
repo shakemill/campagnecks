@@ -15,8 +15,8 @@ import {
   Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useEffect, useMemo } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { HygienoDietChecklist } from "@/components/medical/HygienoDietChecklist";
@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Textarea } from "@/components/ui/textarea";
+import { buildVitalsGuidance } from "@/lib/medical/vitals-guidance";
 import { screeningFormSchema, type ScreeningFormInput } from "@/lib/schemas/screening-form";
 import type { ScreeningRecord, UserRole } from "@/lib/types/domain";
 
@@ -113,6 +114,16 @@ export function ScreeningForm({
   const isSubmitting = form.formState.isSubmitting;
   const weightKg = form.watch("vitalsBiology.weightKg");
   const heightCm = form.watch("vitalsBiology.heightCm");
+  const watchedPatient = useWatch({ control: form.control, name: "patient" });
+  const watchedVitals = useWatch({ control: form.control, name: "vitalsBiology" });
+  const vitalsGuidancePreview = useMemo(
+    () => buildVitalsGuidance({ patient: watchedPatient, vitalsBiology: watchedVitals }),
+    [watchedPatient, watchedVitals],
+  );
+
+  const patientAge = watchedPatient?.age;
+  const showScoreOmsSection =
+    typeof patientAge === "number" && Number.isFinite(patientAge) && patientAge >= 40;
 
   useEffect(() => {
     const hasWeight = Number.isFinite(weightKg) && weightKg > 0;
@@ -444,14 +455,6 @@ export function ScreeningForm({
               />
             </div>
             <div className="space-y-1">
-              <Label>Glycemie (g/L)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                {...form.register("vitalsBiology.fastingGlucoseGl", { valueAsNumber: true })}
-              />
-            </div>
-            <div className="space-y-1">
               <Label>Poids (kg)</Label>
               <Input type="number" {...form.register("vitalsBiology.weightKg", { valueAsNumber: true })} />
             </div>
@@ -473,6 +476,86 @@ export function ScreeningForm({
               <Label>Tour de taille (cm)</Label>
               <Input type="number" {...form.register("vitalsBiology.waistCm", { valueAsNumber: true })} />
             </div>
+            <div className="space-y-1">
+              <Label>Glycemie (g/L)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                {...form.register("vitalsBiology.fastingGlucoseGl", { valueAsNumber: true })}
+              />
+            </div>
+          </div>
+
+          <div
+            className="mt-4 space-y-3 rounded-lg border border-border bg-surface-muted/40 p-4"
+            aria-live="polite"
+          >
+            <p className="text-sm font-semibold text-brand-gray">
+              Aide a l&apos;interpretation (automatique)
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Informations derivees des constantes et du sexe du patient ; non modifiables ; ne se substituent pas
+              au jugement clinique.
+            </p>
+            {!vitalsGuidancePreview ? (
+              <p className="text-sm text-muted-foreground">
+                Saisissez au moins une mesure exploitable (PA complete des deux bras, IMC, tour de taille ou
+                glycemie) pour afficher une synthese.
+              </p>
+            ) : (
+              <ul className="space-y-3 text-sm text-brand-gray">
+                {vitalsGuidancePreview.bloodPressureAvg ? (
+                  <li className="space-y-1">
+                    <span className="font-medium text-brand-gray">Pression arterielle (moyenne bras droit/gauche)</span>
+                    <div className="pl-0 text-muted-foreground">
+                      {vitalsGuidancePreview.bloodPressureAvg.systolic}/
+                      {vitalsGuidancePreview.bloodPressureAvg.diastolic} mmHg —{" "}
+                      {vitalsGuidancePreview.bloodPressureAvg.classification}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Risque CV : {vitalsGuidancePreview.bloodPressureAvg.cardiovascularRisk}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Action : {vitalsGuidancePreview.bloodPressureAvg.action}
+                    </div>
+                  </li>
+                ) : null}
+                {vitalsGuidancePreview.bmi ? (
+                  <li className="space-y-1">
+                    <span className="font-medium text-brand-gray">IMC</span>
+                    <div className="text-muted-foreground">
+                      {vitalsGuidancePreview.bmi.value} kg/m² — {vitalsGuidancePreview.bmi.weightStatus} (
+                      {vitalsGuidancePreview.bmi.intervalLabel})
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Risque metabolique : {vitalsGuidancePreview.bmi.metabolicRisk}
+                    </div>
+                  </li>
+                ) : null}
+                {vitalsGuidancePreview.waist ? (
+                  <li className="space-y-1">
+                    <span className="font-medium text-brand-gray">Tour de taille</span>
+                    <div className="text-muted-foreground">
+                      {vitalsGuidancePreview.waist.value} cm — {vitalsGuidancePreview.waist.thresholdLabel}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {vitalsGuidancePreview.waist.cardiometabolicRisk}
+                    </div>
+                  </li>
+                ) : null}
+                {vitalsGuidancePreview.glucose ? (
+                  <li className="space-y-1">
+                    <span className="font-medium text-brand-gray">Glycemie a jeun</span>
+                    <div className="text-muted-foreground">
+                      {vitalsGuidancePreview.glucose.valueGPerL} g/L — {vitalsGuidancePreview.glucose.status}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {vitalsGuidancePreview.glucose.clinicalRisk}
+                    </div>
+                  </li>
+                ) : null}
+              </ul>
+            )}
           </div>
         </section>
 
@@ -516,56 +599,58 @@ export function ScreeningForm({
           />
         </section>
 
-        <section className="soft-card space-y-3 p-4">
-          <SectionHeader
-            icon={ShieldCheck}
-            title="V. Evaluation du risque cardiovasculaire"
-            description="Patients de 40 ans ou plus (SCORE OMS)"
-          />
-          <Controller
-            control={form.control}
-            name="cardiovascularRisk.enabled"
-            render={({ field }) => (
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  disabled={doctorOnlySectionLocked}
-                  checked={Boolean(field.value)}
-                  onCheckedChange={(checked) => field.onChange(Boolean(checked))}
-                />
-                Evaluation activee (patients &gt;= 40 ans)
-              </label>
-            )}
-          />
-          <div className="grid gap-2 md:grid-cols-2">
-            {[
-              { value: "FAIBLE", label: "Risque faible (<5%)" },
-              { value: "MODERE", label: "Risque modere (5-10%)" },
-              { value: "ELEVE", label: "Risque eleve (10-20%)" },
-              { value: "TRES_ELEVE", label: "Risque tres eleve (20-30%)" },
-              { value: "TRES_TRES_ELEVE", label: "Risque tres tres eleve (&gt;=30%)" },
-            ].map((option) => (
-              <label key={option.value} className="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  value={option.value}
-                  disabled={doctorOnlySectionLocked}
-                  {...form.register("cardiovascularRisk.level")}
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-          <Textarea
-            disabled={doctorOnlySectionLocked}
-            {...form.register("cardiovascularRisk.scoreNote")}
-            placeholder="Note SCORE OMS..."
-          />
-        </section>
+        {showScoreOmsSection ? (
+          <section className="soft-card space-y-3 p-4">
+            <SectionHeader
+              icon={ShieldCheck}
+              title="V. Evaluation du risque cardiovasculaire"
+              description="Patients de 40 ans ou plus (SCORE OMS)"
+            />
+            <Controller
+              control={form.control}
+              name="cardiovascularRisk.enabled"
+              render={({ field }) => (
+                <label className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    disabled={doctorOnlySectionLocked}
+                    checked={Boolean(field.value)}
+                    onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                  />
+                  Evaluation activee (patients &gt;= 40 ans)
+                </label>
+              )}
+            />
+            <div className="grid gap-2 md:grid-cols-2">
+              {[
+                { value: "FAIBLE", label: "Risque faible (<5%)" },
+                { value: "MODERE", label: "Risque modere (5-10%)" },
+                { value: "ELEVE", label: "Risque eleve (10-20%)" },
+                { value: "TRES_ELEVE", label: "Risque tres eleve (20-30%)" },
+                { value: "TRES_TRES_ELEVE", label: "Risque tres tres eleve (&gt;=30%)" },
+              ].map((option) => (
+                <label key={option.value} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    value={option.value}
+                    disabled={doctorOnlySectionLocked}
+                    {...form.register("cardiovascularRisk.level")}
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+            <Textarea
+              disabled={doctorOnlySectionLocked}
+              {...form.register("cardiovascularRisk.scoreNote")}
+              placeholder="Note SCORE OMS..."
+            />
+          </section>
+        ) : null}
 
         <section className="soft-card space-y-3 p-4">
           <SectionHeader
             icon={Stethoscope}
-            title="VI. Orientation et decision medicale"
+            title={`${showScoreOmsSection ? "VI" : "V"}. Orientation et decision medicale`}
           />
           <Controller
             control={form.control}
@@ -626,7 +711,10 @@ export function ScreeningForm({
         </section>
 
         <section className="soft-card space-y-3 p-4">
-          <SectionHeader icon={Users} title="VII. Identification du personnel" />
+          <SectionHeader
+            icon={Users}
+            title={`${showScoreOmsSection ? "VII" : "VI"}. Identification du personnel`}
+          />
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1">
               <Label>Infirmier(ere)</Label>
