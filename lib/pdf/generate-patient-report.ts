@@ -3,6 +3,27 @@ import QRCode from "qrcode";
 
 import type { ScreeningRecord } from "@/lib/types/domain";
 
+/**
+ * Supprime tous les caractères que WinAnsi (polices StandardFonts pdf-lib) ne peut pas
+ * encoder : caractères de contrôle (U+0000–U+001F, U+007F) et tout caractère hors
+ * plage WinAnsi (>= U+0100, sauf les quelques accents couverts).
+ * On remplace par un espace et on compacte pour éviter les doubles espaces.
+ */
+function sanitizePdfText(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const str = String(value);
+  return (
+    str
+      // Caractères de contrôle (inclut \n \r \t \0 …)
+      .replace(/[\u0000-\u001F\u007F]/g, " ")
+      // Caractères hors WinAnsi (polices Helvetica standard)
+      .replace(/[^\x20-\xFF]/g, "")
+      // Compacter les espaces multiples
+      .replace(/\s+/g, " ")
+      .trim()
+  );
+}
+
 export async function generatePatientReportPdf(record: ScreeningRecord): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -35,58 +56,58 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     }
   }
 
-  function sanitizePdfText(value: string): string {
-    // WinAnsi (polices StandardFonts) n'encode pas les caractères de contrôle.
-    // On supprime ces caractères et on normalise les espaces pour éviter les
-    // erreurs à la mesure/dessin (notamment \n remonté en production).
-    return value
-      .replace(/[\u0000-\u001F\u007F]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+  /** Wrapper systématique : aucun texte ne touche page.drawText sans avoir été sanitisé. */
+  function safeDraw(
+    text: unknown,
+    options: Parameters<typeof page.drawText>[1],
+  ): void {
+    const safe = sanitizePdfText(text);
+    if (!safe) return;
+    page.drawText(safe, options);
   }
 
-  function safeWidthOfTextAtSize(value: string, size: number): number {
-    const safe = sanitizePdfText(value);
+  function safeWidth(text: unknown, size: number): number {
+    const safe = sanitizePdfText(text);
+    if (!safe) return 0;
     try {
       return fontRegular.widthOfTextAtSize(safe, size);
     } catch {
-      // Fallback ultra-prudent : ASCII visible uniquement.
-      const asciiSafe = safe.replace(/[^\x20-\x7E]/g, "");
-      return fontRegular.widthOfTextAtSize(asciiSafe, size);
+      return fontRegular.widthOfTextAtSize(
+        safe.replace(/[^\x20-\x7E]/g, ""),
+        size,
+      );
     }
   }
 
-  function wrapText(text: string, size = 10, maxWidth = contentWidth): string[] {
+  function wrapText(text: unknown, size = 10, maxWidth = contentWidth): string[] {
     const normalized = sanitizePdfText(text);
-    const words = normalized.split(" ");
+    const words = normalized.split(" ").filter(Boolean);
     const lines: string[] = [];
     let current = "";
 
     for (const word of words) {
       const candidate = current ? `${current} ${word}` : word;
-      if (safeWidthOfTextAtSize(candidate, size) <= maxWidth) {
+      if (safeWidth(candidate, size) <= maxWidth) {
         current = candidate;
       } else {
-        if (current) {
-          lines.push(current);
-        }
+        if (current) lines.push(current);
         current = word;
       }
     }
-
-    if (current) {
-      lines.push(current);
-    }
+    if (current) lines.push(current);
     return lines.length ? lines : [""];
   }
 
-  function drawLine(text: string, options?: { bold?: boolean; size?: number; color?: ReturnType<typeof rgb> }) {
+  function drawLine(
+    text: unknown,
+    options?: { bold?: boolean; size?: number; color?: ReturnType<typeof rgb> },
+  ) {
     const size = options?.size ?? 10;
     const lineHeight = size + 4;
     const lines = wrapText(text, size);
     ensureSpace(lines.length * lineHeight + 4);
     for (const line of lines) {
-      page.drawText(line, {
+      safeDraw(line, {
         x: marginLeft,
         y,
         size,
@@ -109,7 +130,7 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
       borderColor: COLORS.border,
       borderWidth: 0.5,
     });
-    page.drawText(title, {
+    safeDraw(title, {
       x: marginLeft + 8,
       y: y - 2,
       size: 11,
@@ -119,13 +140,11 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     y -= 24;
   }
 
-  function drawKeyValueRow(label: string, value: string): void {
+  function drawKeyValueRow(label: string, value: unknown): void {
     const rowHeight = 18;
     const labelWidth = 170;
     const valueWidth = contentWidth - labelWidth;
     ensureSpace(rowHeight);
-    const safeLabel = sanitizePdfText(label);
-    const safeValue = sanitizePdfText(value || "-");
 
     page.drawRectangle({
       x: marginLeft,
@@ -145,14 +164,14 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
       borderColor: COLORS.border,
       borderWidth: 0.5,
     });
-    page.drawText(safeLabel, {
+    safeDraw(label, {
       x: marginLeft + 6,
       y: y - 11,
       size: 9,
       font: fontBold,
       color: COLORS.muted,
     });
-    page.drawText(safeValue, {
+    safeDraw(String(value ?? "-") || "-", {
       x: marginLeft + labelWidth + 6,
       y: y - 11,
       size: 9,
@@ -164,52 +183,53 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
 
   const personalHistoryMap: Record<string, string> = {
     HTA: "HTA",
-    DIABETE: "Diabète",
+    DIABETE: "Diabete",
     IRC: "IRC",
     AVC: "AVC",
     IDM: "Infarctus du myocarde",
   };
   const familyHistoryMap: Record<string, string> = {
     HTA: "HTA",
-    DIABETE: "Diabète",
+    DIABETE: "Diabete",
     AVC: "AVC",
     IDM: "IDM",
     MORT_SUBITE: "Mort subite",
   };
   const interpretationMap: Record<string, string> = {
-    DEP_NORM: "Dépistage normal",
+    DEP_NORM: "Depistage normal",
     HTA: "HTA",
-    DIABETE: "Diabète",
-    PREDIABETE: "Prédiabète",
-    OBESITE: "Obésité",
+    DIABETE: "Diabete",
+    PREDIABETE: "Prediabete",
+    OBESITE: "Obesite",
     SURPOIDS: "Surpoids",
-    OBESITE_ABDOMINALE: "Obésité abdominale",
+    OBESITE_ABDOMINALE: "Obesite abdominale",
   };
   const riskMap: Record<string, string> = {
     FAIBLE: "Risque faible (<5%)",
-    MODERE: "Risque modéré (5-10%)",
-    ELEVE: "Risque élevé (10-20%)",
-    TRES_ELEVE: "Risque très élevé (20-30%)",
-    TRES_TRES_ELEVE: "Risque très très élevé (>=30%)",
+    MODERE: "Risque modere (5-10%)",
+    ELEVE: "Risque eleve (10-20%)",
+    TRES_ELEVE: "Risque tres eleve (20-30%)",
+    TRES_TRES_ELEVE: "Risque tres tres eleve (>=30%)",
   };
   const adviceMap: Record<string, string> = {
-    reduceSaltBouillon: "Arrêtez d'utiliser les cubes et bouillons d'assaisonnement.",
-    reduceSaltMeals: "Réduisez au maximum la quantité de sel dans vos repas.",
-    avoidProcessedFood: "Évitez les aliments transformés.",
+    reduceSaltBouillon: "Arretez d'utiliser les cubes et bouillons d'assaisonnement.",
+    reduceSaltMeals: "Reduisez au maximum la quantite de sel dans vos repas.",
+    avoidProcessedFood: "Evitez les aliments transformes.",
     avoidSedentaryLifestyle:
-      "Évitez la sédentarité : réduisez au maximum votre temps d'éveil passé assis ou allongé.",
+      "Evitez la sedentarite : reduisez au maximum votre temps d'eveil passe assis ou allonge.",
     activity30mFiveDays:
-      "Faites au moins 30 minutes d'activité physique modérée (exemples : marche rapide, footing, danse, natation...) minimum 5 jours par semaine.",
-    addVegetables: "Remplissez la moitié de votre assiette avec des légumes.",
-    eatFruitsRegularly: "Consommez régulièrement des fruits.",
-    replaceSugaryDrinks: "Remplacez les boissons sucrées et sodas par de l'eau.",
-    stopSmoking: "Le tabac bouche vos artères dès la première cigarette.",
-    reduceAlcohol: "Limitez l'alcool à des occasions exceptionnelles.",
-    monitorBloodPressureWeightSugar: "Connaissez votre tension, votre poids et votre sucre (glycémie).",
+      "Faites au moins 30 minutes d'activite physique moderee minimum 5 jours par semaine.",
+    addVegetables: "Remplissez la moitie de votre assiette avec des legumes.",
+    eatFruitsRegularly: "Consommez regulierement des fruits.",
+    replaceSugaryDrinks: "Remplacez les boissons sucrees et sodas par de l'eau.",
+    stopSmoking: "Le tabac bouche vos arteres des la premiere cigarette.",
+    reduceAlcohol: "Limitez l'alcool a des occasions exceptionnelles.",
+    monitorBloodPressureWeightSugar: "Connaissez votre tension, votre poids et votre sucre (glycemie).",
     consultIfHighRisk:
-      "Si votre risque est Orange (élevé), Rouge clair (très élevé) ou Rouge foncé (très très élevé), consultez un médecin rapidement.",
+      "Si votre risque est eleve ou tres eleve, consultez un medecin rapidement.",
   };
 
+  // En-tête
   page.drawRectangle({
     x: marginLeft,
     y: y - 54,
@@ -219,21 +239,21 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     borderColor: COLORS.primary,
     borderWidth: 1.2,
   });
-  page.drawText("PLÉNITUDE CLINIQUE KOUAM SAMUEL", {
+  safeDraw("PLENITUDE CLINIQUE KOUAM SAMUEL", {
     x: marginLeft + 10,
     y: y - 18,
     size: 11,
     font: fontBold,
     color: COLORS.primary,
   });
-  page.drawText("Rapport professionnel - Dépistage cardiovasculaire", {
+  safeDraw("Rapport professionnel - Depistage cardiovasculaire", {
     x: marginLeft + 10,
     y: y - 34,
     size: 10,
     font: fontRegular,
     color: COLORS.text,
   });
-  page.drawText(`Généré le ${new Date().toLocaleString("fr-FR")}`, {
+  safeDraw(`Genere le ${new Date().toLocaleString("fr-FR")}`, {
     x: marginLeft + 10,
     y: y - 47,
     size: 8,
@@ -243,38 +263,44 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
   y -= 66;
 
   drawSectionTitle("IDENTIFICATION DU PATIENT");
-  drawKeyValueRow("N° d'enregistrement", record.registrationNumber);
+  drawKeyValueRow("N d'enregistrement", record.registrationNumber);
   drawKeyValueRow("Date de fiche", record.patient.date);
-  drawKeyValueRow("Nom et prénom", record.patient.fullName);
-  drawKeyValueRow("Âge / Sexe", `${record.patient.age} ans / ${record.patient.sex === "M" ? "Masculin" : "Féminin"}`);
-  drawKeyValueRow("Lieu de résidence", record.patient.residence);
+  drawKeyValueRow("Nom et prenom", record.patient.fullName);
+  drawKeyValueRow(
+    "Age / Sexe",
+    `${record.patient.age} ans / ${record.patient.sex === "M" ? "Masculin" : "Feminin"}`,
+  );
+  drawKeyValueRow("Lieu de residence", record.patient.residence);
   drawKeyValueRow("Profession", record.patient.profession);
-  drawKeyValueRow("Téléphone", `${record.patient.phone1}${record.patient.phone2 ? ` / ${record.patient.phone2}` : ""}`);
+  drawKeyValueRow(
+    "Telephone",
+    `${record.patient.phone1}${record.patient.phone2 ? ` / ${record.patient.phone2}` : ""}`,
+  );
   y -= 8;
 
-  drawSectionTitle("FACTEURS DE RISQUE ET ANTÉCÉDENTS");
+  drawSectionTitle("FACTEURS DE RISQUE ET ANTECEDENTS");
   drawLine(
-    `Tabagisme: ${record.riskFactors.smoking}${record.riskFactors.packYears ? ` | ${record.riskFactors.packYears} PA` : ""}${
-      record.riskFactors.yearsSinceQuit ? ` | Sevrage depuis ${record.riskFactors.yearsSinceQuit} ans` : ""
-    }`,
+    `Tabagisme: ${record.riskFactors.smoking}${
+      record.riskFactors.packYears ? ` | ${record.riskFactors.packYears} PA` : ""
+    }${record.riskFactors.yearsSinceQuit ? ` | Sevrage depuis ${record.riskFactors.yearsSinceQuit} ans` : ""}`,
   );
   drawLine(`Consommation alcool: ${record.riskFactors.alcohol}`);
-  drawLine(`Activité physique (30 min): ${record.riskFactors.physicalActivity}`);
+  drawLine(`Activite physique (30 min): ${record.riskFactors.physicalActivity}`);
   drawLine(
-    `Antécédents personnels: ${
+    `Antecedents personnels: ${
       record.riskFactors.personalHistory.length
-        ? record.riskFactors.personalHistory.map((item) => personalHistoryMap[item]).join(", ")
+        ? record.riskFactors.personalHistory.map((item) => personalHistoryMap[item] ?? item).join(", ")
         : "Aucun"
     }`,
   );
   drawLine(
-    `Antécédents familiaux: ${
+    `Antecedents familiaux: ${
       record.riskFactors.familyHistory.length
-        ? record.riskFactors.familyHistory.map((item) => familyHistoryMap[item]).join(", ")
+        ? record.riskFactors.familyHistory.map((item) => familyHistoryMap[item] ?? item).join(", ")
         : "Aucun"
     }`,
   );
-  drawLine(`Traitement en cours: ${record.riskFactors.ongoingTreatment || "Non précisé"}`);
+  drawLine(`Traitement en cours: ${record.riskFactors.ongoingTreatment || "Non precise"}`);
   y -= 6;
 
   drawSectionTitle("CONSTANTES ET BIOLOGIE");
@@ -288,49 +314,49 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     `Poids: ${record.vitalsBiology.weightKg} kg | Taille: ${record.vitalsBiology.heightCm} cm | IMC: ${record.vitalsBiology.bmi}`,
   );
   drawLine(`Tour de taille: ${record.vitalsBiology.waistCm} cm`);
-  drawLine(`Glycémie à jeun: ${record.vitalsBiology.fastingGlucoseGl} g/L`);
+  drawLine(`Glycemie a jeun: ${record.vitalsBiology.fastingGlucoseGl} g/L`);
   y -= 6;
 
   if (record.vitalsGuidance) {
     const vg = record.vitalsGuidance;
-    drawSectionTitle("SYNTHÈSE AUTOMATIQUE (CONSTANTES)");
+    drawSectionTitle("SYNTHESE AUTOMATIQUE (CONSTANTES)");
     drawLine(
-      "Informations dérivées des mesures ci-dessus et du sexe ; aide non substitutive du jugement clinique.",
+      "Informations derivees des mesures ci-dessus et du sexe ; aide non substitutive du jugement clinique.",
       { size: 9, color: COLORS.muted },
     );
     if (vg.bloodPressureAvg) {
       drawLine(
-        `PA moyenne (bras droit/gauche): ${vg.bloodPressureAvg.systolic}/${vg.bloodPressureAvg.diastolic} mmHg`,
+        `PA moyenne: ${vg.bloodPressureAvg.systolic}/${vg.bloodPressureAvg.diastolic} mmHg`,
       );
       drawLine(`Classification: ${vg.bloodPressureAvg.classification}`);
-      drawLine(`Risque cardiovasculaire: ${vg.bloodPressureAvg.cardiovascularRisk}`);
+      drawLine(`Risque CV: ${vg.bloodPressureAvg.cardiovascularRisk}`);
       drawLine(`Action: ${vg.bloodPressureAvg.action}`);
     }
     if (vg.bmi) {
       drawLine(`IMC: ${vg.bmi.value} kg/m2 - ${vg.bmi.weightStatus} (${vg.bmi.intervalLabel})`);
-      drawLine(`Risque métabolique: ${vg.bmi.metabolicRisk}`);
+      drawLine(`Risque metabolique: ${vg.bmi.metabolicRisk}`);
     }
     if (vg.waist) {
       drawLine(`Tour de taille: ${vg.waist.value} cm - ${vg.waist.thresholdLabel}`);
-      drawLine(`Risque cardiométabolique (périmètre): ${vg.waist.cardiometabolicRisk}`);
+      drawLine(`Risque cardiometabolique: ${vg.waist.cardiometabolicRisk}`);
     }
     if (vg.glucose) {
-      drawLine(`Glycémie à jeun: ${vg.glucose.valueGPerL} g/L - ${vg.glucose.status}`);
-      drawLine(`Risque clinique (glycémie): ${vg.glucose.clinicalRisk}`);
+      drawLine(`Glycemie a jeun: ${vg.glucose.valueGPerL} g/L - ${vg.glucose.status}`);
+      drawLine(`Risque clinique: ${vg.glucose.clinicalRisk}`);
     }
-    drawLine(`Synthèse calculée le: ${vg.computedAt}`, { size: 9, color: COLORS.muted });
+    drawLine(`Synthese calculee le: ${vg.computedAt}`, { size: 9, color: COLORS.muted });
     y -= 6;
   }
 
-  drawSectionTitle("INTERPRÉTATION GLOBALE");
+  drawSectionTitle("INTERPRETATION GLOBALE");
   drawLine(
-    `Interprétations cochées: ${
+    `Interpretations cochees: ${
       record.interpretation.labels.length
         ? record.interpretation.labels.map((item) => interpretationMap[item] ?? item).join(", ")
         : "Aucune"
     }`,
   );
-  drawLine(`Autre interprétation: ${record.interpretation.other || "Aucune"}`);
+  drawLine(`Autre interpretation: ${record.interpretation.other || "Aucune"}`);
   y -= 6;
 
   const scoreOmsEligible =
@@ -339,46 +365,48 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     record.patient.age <= 40;
 
   if (scoreOmsEligible) {
-    drawSectionTitle("ÉVALUATION DU RISQUE CARDIOVASCULAIRE");
-    drawLine(`Évaluation activée: ${record.cardiovascularRisk.enabled ? "Oui" : "Non"}`);
+    drawSectionTitle("EVALUATION DU RISQUE CARDIOVASCULAIRE");
+    drawLine(`Evaluation activee: ${record.cardiovascularRisk.enabled ? "Oui" : "Non"}`);
     drawLine(
       `Niveau de risque: ${
-        record.cardiovascularRisk.level ? riskMap[record.cardiovascularRisk.level] : "Non évalué"
+        record.cardiovascularRisk.level ? riskMap[record.cardiovascularRisk.level] : "Non evalue"
       }`,
     );
     drawLine(`Note SCORE OMS: ${record.cardiovascularRisk.scoreNote || "Aucune"}`);
     y -= 6;
   }
 
-  drawSectionTitle("ORIENTATION ET DÉCISION MÉDICALE");
+  drawSectionTitle("ORIENTATION ET DECISION MEDICALE");
   drawLine(
-    `Orientations cochées: ${
-      record.orientationDecision.items.length ? record.orientationDecision.items.join(", ") : "Aucune"
+    `Orientations cochees: ${
+      record.orientationDecision.items.length
+        ? record.orientationDecision.items.join(", ")
+        : "Aucune"
     }`,
   );
   drawLine(`Autre orientation: ${record.orientationDecision.other || "Aucune"}`);
   drawLine(
-    `Rendez-vous de contrôle: ${
+    `Rendez-vous de controle: ${
       record.orientationDecision.followUpDate
         ? `${record.orientationDecision.followUpDate} ${record.orientationDecision.followUpTime ?? ""}`.trim()
-        : "Non défini"
+        : "Non defini"
     }`,
   );
   y -= 6;
 
   drawSectionTitle("IDENTIFICATION DU PERSONNEL");
-  drawLine(`Infirmier(ère): ${record.staffIdentity.nurseName || "Non renseigné"}`);
-  drawLine(`Médecin: ${record.staffIdentity.doctorName || "Non renseigné"}`);
+  drawLine(`Infirmier(e): ${record.staffIdentity.nurseName || "Non renseigne"}`);
+  drawLine(`Medecin: ${record.staffIdentity.doctorName || "Non renseigne"}`);
   y -= 6;
 
-  drawSectionTitle("CONSEILS HYGIÉNO-DIÉTÉTIQUES");
+  drawSectionTitle("CONSEILS HYGIENO-DIETETIQUES");
   const checkedAdvice = Object.entries(record.hygienoDietAdvice)
     .filter(([, checked]) => checked)
     .map(([label]) => adviceMap[label] ?? label);
-  drawLine(checkedAdvice.length ? checkedAdvice.join(", ") : "Aucun conseil coché");
+  drawLine(checkedAdvice.length ? checkedAdvice.join(" / ") : "Aucun conseil coche");
 
   y -= 8;
-  drawLine(`Fiche validée par médecin: ${record.validatedAt ? "Oui" : "Non"}`, { bold: true });
+  drawLine(`Fiche validee par medecin: ${record.validatedAt ? "Oui" : "Non"}`, { bold: true });
   drawLine(
     `Date validation: ${record.validatedAt ? new Date(record.validatedAt).toLocaleString("fr-FR") : "N/A"}`,
     { color: COLORS.muted },
@@ -389,7 +417,7 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
   const qrImage = await pdfDoc.embedPng(qrDataUrl);
   ensureSpace(130);
   page.drawImage(qrImage, { x: pageSize[0] - 150, y: marginBottom, width: 110, height: 110 });
-  page.drawText("QR vérification", {
+  safeDraw("QR verification", {
     x: pageSize[0] - 140,
     y: marginBottom - 12,
     size: 9,
