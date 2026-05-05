@@ -287,7 +287,6 @@ export function ScreeningForm({
                   <input
                     type="radio"
                     value="NON"
-                    disabled={doctorOnlySectionLocked}
                     {...form.register("riskFactors.smoking")}
                   />
                   Non
@@ -296,7 +295,6 @@ export function ScreeningForm({
                   <input
                     type="radio"
                     value="FUMEUR_ACTIF"
-                    disabled={doctorOnlySectionLocked}
                     {...form.register("riskFactors.smoking")}
                   />
                   Fumeur actif
@@ -305,7 +303,6 @@ export function ScreeningForm({
                   <input
                     type="radio"
                     value="ANCIEN_FUMEUR"
-                    disabled={doctorOnlySectionLocked}
                     {...form.register("riskFactors.smoking")}
                   />
                   Ancien fumeur
@@ -316,7 +313,6 @@ export function ScreeningForm({
                   <Label>PA (pack-years)</Label>
                   <Input
                     type="number"
-                    disabled={doctorOnlySectionLocked}
                     {...form.register("riskFactors.packYears", { valueAsNumber: true })}
                   />
                 </div>
@@ -324,7 +320,6 @@ export function ScreeningForm({
                   <Label>Années depuis sevrage</Label>
                   <Input
                     type="number"
-                    disabled={doctorOnlySectionLocked}
                     {...form.register("riskFactors.yearsSinceQuit", { valueAsNumber: true })}
                   />
                 </div>
@@ -343,7 +338,6 @@ export function ScreeningForm({
                     <input
                       type="radio"
                       value={option.value}
-                      disabled={doctorOnlySectionLocked}
                       {...form.register("riskFactors.alcohol")}
                     />
                     {option.label}
@@ -364,7 +358,6 @@ export function ScreeningForm({
                     <input
                       type="radio"
                       value={option.value}
-                      disabled={doctorOnlySectionLocked}
                       {...form.register("riskFactors.physicalActivity")}
                     />
                     {option.label}
@@ -383,7 +376,6 @@ export function ScreeningForm({
                     {["HTA", "DIABETE", "IRC", "AVC", "IDM"].map((item) => (
                       <label key={item} className="flex items-center gap-2 text-sm">
                         <Checkbox
-                          disabled={doctorOnlySectionLocked}
                           checked={field.value.includes(item as (typeof field.value)[number])}
                           onCheckedChange={(checked) => {
                             const current = field.value ?? [];
@@ -412,7 +404,6 @@ export function ScreeningForm({
                     {["HTA", "DIABETE", "AVC", "IDM", "MORT_SUBITE"].map((item) => (
                       <label key={item} className="flex items-center gap-2 text-sm">
                         <Checkbox
-                          disabled={doctorOnlySectionLocked}
                           checked={field.value.includes(item as (typeof field.value)[number])}
                           onCheckedChange={(checked) => {
                             const current = field.value ?? [];
@@ -434,7 +425,6 @@ export function ScreeningForm({
             <div className="space-y-1">
               <Label>Traitement en cours</Label>
               <Textarea
-                disabled={doctorOnlySectionLocked}
                 {...form.register("riskFactors.ongoingTreatment")}
               />
             </div>
