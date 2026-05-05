@@ -20,5 +20,15 @@ export const campaignUserSchema = z.object({
   campaignId: z.string().min(1),
 });
 
+export const campaignUserUpdateSchema = z.object({
+  firstName: z.string().trim().min(2).optional(),
+  lastName: z.string().trim().min(2).optional(),
+  title: z.enum(["Dr", "Professeur", "M.", "Mme"]).optional(),
+  role: z.enum(["MEDECIN", "INFIRMIER_TECH"]).optional(),
+  campaignId: z.string().min(1).optional(),
+  isActive: z.boolean().optional(),
+});
+
 export type CampaignInput = z.infer<typeof campaignSchema>;
 export type CampaignUserInput = z.infer<typeof campaignUserSchema>;
+export type CampaignUserUpdateInput = z.infer<typeof campaignUserUpdateSchema>;
