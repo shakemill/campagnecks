@@ -161,8 +161,25 @@ export function ScreeningForm({
         if (validateRes.ok) {
           toast.success("Validation médicale et génération PDF déclenchées.");
         } else {
-          const payload = (await validateRes.json().catch(() => ({}))) as { message?: string };
-          toast.error(payload.message ?? "Validation impossible. Réessayez.");
+          const raw = await validateRes.text();
+          let message: string | undefined;
+          if (raw) {
+            try {
+              const parsed = JSON.parse(raw) as { message?: string };
+              message = parsed.message;
+            } catch {
+              message = raw.slice(0, 180);
+            }
+          }
+          console.error("Validation API failed", {
+            status: validateRes.status,
+            statusText: validateRes.statusText,
+            body: raw,
+          });
+          toast.error(
+            message ??
+              `Validation impossible (HTTP ${validateRes.status}). Vérifiez les logs Vercel et BLOB_READ_WRITE_TOKEN.`,
+          );
         }
       }
 
