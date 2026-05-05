@@ -161,7 +161,8 @@ export function ScreeningForm({
         if (validateRes.ok) {
           toast.success("Validation médicale et génération PDF déclenchées.");
         } else {
-          toast.error("Validation impossible. Réessayez.");
+          const payload = (await validateRes.json().catch(() => ({}))) as { message?: string };
+          toast.error(payload.message ?? "Validation impossible. Réessayez.");
         }
       }
 
