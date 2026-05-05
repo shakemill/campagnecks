@@ -36,9 +36,24 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
   }
 
   function sanitizePdfText(value: string): string {
-    // WinAnsi (polices StandardFonts) n'encode pas les retours ligne bruts.
-    // On normalise les espaces pour éviter les erreurs d'encodage à la mesure/dessin.
-    return value.replace(/\r?\n/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim();
+    // WinAnsi (polices StandardFonts) n'encode pas les caractères de contrôle.
+    // On supprime ces caractères et on normalise les espaces pour éviter les
+    // erreurs à la mesure/dessin (notamment \n remonté en production).
+    return value
+      .replace(/[\u0000-\u001F\u007F]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function safeWidthOfTextAtSize(value: string, size: number): number {
+    const safe = sanitizePdfText(value);
+    try {
+      return fontRegular.widthOfTextAtSize(safe, size);
+    } catch {
+      // Fallback ultra-prudent : ASCII visible uniquement.
+      const asciiSafe = safe.replace(/[^\x20-\x7E]/g, "");
+      return fontRegular.widthOfTextAtSize(asciiSafe, size);
+    }
   }
 
   function wrapText(text: string, size = 10, maxWidth = contentWidth): string[] {
@@ -49,7 +64,7 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
 
     for (const word of words) {
       const candidate = current ? `${current} ${word}` : word;
-      if (fontRegular.widthOfTextAtSize(candidate, size) <= maxWidth) {
+      if (safeWidthOfTextAtSize(candidate, size) <= maxWidth) {
         current = candidate;
       } else {
         if (current) {
