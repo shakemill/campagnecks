@@ -16,9 +16,12 @@ export async function POST(_request: NextRequest, context: Params) {
     return guard.response;
   }
 
+  let step = "init";
   try {
+    step = "resolve_params";
     const { id } = await context.params;
     const storage = getStorageAdapter();
+    step = "read_state";
     const state = await storage.readState();
     const record = state.screenings.find((item) => item.id === id);
     if (!record) {
@@ -47,9 +50,12 @@ export async function POST(_request: NextRequest, context: Params) {
         doctorName: doctorFullName || record.staffIdentity.doctorName,
       },
     };
+    step = "generate_pdf";
     const pdf = await generatePatientReportPdf(candidate);
+    step = "publish_pdf";
     const reportBlobUrl = await publishReportPdf(record.id, pdf);
 
+    step = "persist_state";
     await storage.patchState((draft) => {
       const index = draft.screenings.findIndex((item) => item.id === id);
       if (index >= 0) {
@@ -57,6 +63,7 @@ export async function POST(_request: NextRequest, context: Params) {
       }
     });
 
+    step = "audit_log";
     await logAuditEvent({
       actorUserId: guard.session.user.id,
       action: "VALIDATE_SCREENING",
@@ -66,11 +73,11 @@ export async function POST(_request: NextRequest, context: Params) {
 
     return NextResponse.json({ id, reportBlobUrl, validatedAt });
   } catch (error) {
-    console.error("Screening validation failed", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Screening validation failed", { step, error });
     return NextResponse.json(
       {
-        message:
-          "Validation impossible côté serveur. Vérifiez les logs Vercel et la configuration Blob (BLOB_READ_WRITE_TOKEN).",
+        message: `Validation impossible à l'étape "${step}". ${errorMessage}`,
       },
       { status: 500 },
     );
