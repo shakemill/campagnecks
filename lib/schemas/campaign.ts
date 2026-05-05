@@ -3,11 +3,11 @@ import { z } from "zod";
 export const campaignSchema = z
   .object({
     name: z.string().trim().min(3, "Le nom de campagne est requis."),
-    startsAt: z.string().min(1, "Date debut requise."),
-    endsAt: z.string().min(1, "Date fin requise."),
+    startsAt: z.string().min(1, "Date de début requise."),
+    endsAt: z.string().min(1, "Date de fin requise."),
   })
   .refine((data) => new Date(data.startsAt) <= new Date(data.endsAt), {
-    message: "La date de fin doit etre superieure ou egale a la date de debut.",
+    message: "La date de fin doit être supérieure ou égale à la date de début.",
     path: ["endsAt"],
   });
 

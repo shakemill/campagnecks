@@ -33,7 +33,7 @@ export default async function AdminPage() {
           icon={Users}
         />
         <StatCard
-          title="Fiches depistage"
+          title="Fiches de dépistage"
           value={String(state.screenings.length)}
           trendPercent={8}
           icon={Stethoscope}
@@ -42,23 +42,23 @@ export default async function AdminPage() {
 
       <DataCard title="Vue d'ensemble" icon={Info}>
         <p className="text-sm text-muted-foreground">
-          Plateforme de digitalisation des depistages MCV pour Plenitude Clinique Kouam Samuel.
+          Plateforme de digitalisation des dépistages MCV pour Plénitude Clinique Kouam Samuel.
         </p>
       </DataCard>
 
-      <DataCard title="Acces rapides" icon={LayoutDashboard} description="Liens directs vers les modules operatoires">
+      <DataCard title="Accès rapides" icon={LayoutDashboard} description="Liens directs vers les modules opératoires">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <Link
             href="/campaigns"
             className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
           >
-            Gerer les campagnes
+            Gérer les campagnes
           </Link>
           <Link
             href="/screenings/new"
             className="rounded-lg border bg-white p-3 text-sm font-medium text-brand-gray transition-all duration-200 ease-in-out hover:border-brand-pink hover:bg-surface-muted"
           >
-            Nouvelle fiche de depistage
+            Nouvelle fiche de dépistage
           </Link>
           <Link
             href="/screenings"

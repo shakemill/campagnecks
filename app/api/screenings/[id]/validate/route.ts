@@ -21,7 +21,7 @@ export async function POST(_request: NextRequest, context: Params) {
   const state = await storage.readState();
   const record = state.screenings.find((item) => item.id === id);
   if (!record) {
-    return NextResponse.json({ message: "Fiche introuvable" }, { status: 404 });
+    return NextResponse.json({ message: "Fiche introuvable." }, { status: 404 });
   }
   const actor = state.campaignUsers.find((item) => item.id === guard.session.user.id);
   const doctorFullName = actor

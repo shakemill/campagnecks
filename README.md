@@ -1,35 +1,35 @@
 # Cks Manager - Campagne MCV
 
-Application Next.js 14+ pour digitaliser les fiches individuelles de depistage cardiovasculaire.
+Application Next.js 14+ pour digitaliser les fiches individuelles de dépistage cardiovasculaire.
 
-## Fonctionnalites livrees
+## Fonctionnalités livrées
 
-- Creation d'une campagne (nom + periode)
-- Creation des comptes d'acces (medecin / infirmier-technicien) avec envoi SMTP
+- Création d'une campagne (nom + période)
+- Création des comptes d'accès (médecin / infirmier-technicien) avec envoi SMTP
 - Authentification NextAuth (JWT) avec changement obligatoire du mot de passe temporaire
-- RBAC: infirmier modifie uniquement identification patient + constantes/biologie
-- Saisie de fiche MCV et validation finale par medecin
-- Generation automatique du rapport patient PDF avec QR de verification
+- RBAC : l'infirmier modifie uniquement l'identification patient + constantes/biologie
+- Saisie de fiche MCV et validation finale par médecin
+- Génération automatique du rapport patient PDF avec QR de vérification
 - Persistance sans base SQL via JSON sur Vercel Blob
 
 ## Variables d'environnement
 
-Copier `.env.example` vers `.env.local` et renseigner:
+Copier `.env.example` vers `.env.local` et renseigner :
 
 - `AUTH_SECRET`
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
-- `APP_BASE_URL` (ex: `https://campagnecks.vercel.app`, pour les liens de connexion dans les emails)
+- `APP_BASE_URL` (ex. : `https://campagnecks.vercel.app`, pour les liens de connexion dans les e-mails)
 - `BLOB_READ_WRITE_TOKEN`
 
 ### Persistance Vercel Blob (production)
 
-Pour garantir la persistance des donnees sur Vercel:
+Pour garantir la persistance des données sur Vercel :
 
-1. Creer un store Blob dans le projet Vercel
-2. Ajouter la variable `BLOB_READ_WRITE_TOKEN` avec le vrai token genere par Vercel
+1. Créer un store Blob dans le projet Vercel
+2. Ajouter la variable `BLOB_READ_WRITE_TOKEN` avec le vrai token généré par Vercel
 3. Ne pas utiliser la valeur placeholder `vercel_blob_rw_token` en production
 
-Le projet refuse maintenant le fallback silencieux en production si l'ecriture Blob echoue.
+Le projet refuse maintenant le fallback silencieux en production si l'écriture Blob échoue.
 
 ## Lancement
 
@@ -38,14 +38,14 @@ npm install
 npm run dev
 ```
 
-Ensuite:
+Ensuite :
 
-1. Ouvrir `/setup` pour creer le premier compte medecin
+1. Ouvrir `/setup` pour créer le premier compte médecin
 2. Se connecter via `/login`
-3. Creer la campagne puis les comptes d'acces
-4. Saisir une fiche et valider en medecin pour generer le PDF
+3. Créer la campagne puis les comptes d'accès
+4. Saisir une fiche et valider en médecin pour générer le PDF
 
-## Qualite
+## Qualité
 
 ```bash
 npm run lint

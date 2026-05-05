@@ -123,7 +123,7 @@ export function ScreeningForm({
 
   const patientAge = watchedPatient?.age;
   const showScoreOmsSection =
-    typeof patientAge === "number" && Number.isFinite(patientAge) && patientAge >= 40;
+    typeof patientAge === "number" && Number.isFinite(patientAge) && patientAge <= 40;
 
   useEffect(() => {
     const hasWeight = Number.isFinite(weightKg) && weightKg > 0;
@@ -149,19 +149,19 @@ export function ScreeningForm({
       });
 
       if (!response.ok) {
-        toast.error("Echec de sauvegarde de la fiche.");
+        toast.error("Échec de sauvegarde de la fiche.");
         return;
       }
 
       const data = (await response.json()) as { id: string };
-      toast.success("Fiche enregistree.");
+      toast.success("Fiche enregistrée.");
 
       if (role === "MEDECIN") {
         const validateRes = await fetch(`/api/screenings/${data.id}/validate`, { method: "POST" });
         if (validateRes.ok) {
-          toast.success("Validation medicale et generation PDF declenchees.");
+          toast.success("Validation médicale et génération PDF déclenchées.");
         } else {
-          toast.error("Validation impossible. Reessayez.");
+          toast.error("Validation impossible. Réessayez.");
         }
       }
 
@@ -169,7 +169,7 @@ export function ScreeningForm({
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error("Une erreur reseau est survenue.");
+      toast.error("Une erreur réseau est survenue.");
     }
   };
 
@@ -185,7 +185,7 @@ export function ScreeningForm({
             <SectionHeader
               icon={FilePlus2}
               title="Campagne cible"
-              description="Selectionnez la campagne correspondante avant creation de la fiche"
+              description="Sélectionnez la campagne correspondante avant création de la fiche"
             />
             <div className="space-y-1">
               <Label>Campagne</Label>
@@ -196,7 +196,7 @@ export function ScreeningForm({
                 {campaigns.map((item) => (
                   <option key={item.id} value={item.id} disabled={item.status !== "ACTIVE"}>
                     {item.name}
-                    {item.status === "ARCHIVED" ? " (cloturee)" : ""}
+                    {item.status === "ARCHIVED" ? " (clôturée)" : ""}
                   </option>
                 ))}
               </select>
@@ -208,7 +208,7 @@ export function ScreeningForm({
           <SectionHeader icon={UserRound} title="I. Identification du patient" />
           {initialRecord ? (
             <p className="rounded-md bg-surface-muted px-3 py-2 text-xs text-muted-foreground">
-              N d&apos;enregistrement: {initialRecord.registrationNumber}
+              N° d&apos;enregistrement : {initialRecord.registrationNumber}
             </p>
           ) : null}
           <div className="grid gap-3 md:grid-cols-2">
@@ -217,15 +217,15 @@ export function ScreeningForm({
               <Input type="date" {...form.register("patient.date")} />
             </div>
             <div className="space-y-1">
-              <Label>Nom et prenom</Label>
+              <Label>Nom et prénom</Label>
               <Input {...form.register("patient.fullName")} />
             </div>
             <div className="space-y-1">
-              <Label>Age</Label>
+              <Label>Âge</Label>
               <Input type="number" {...form.register("patient.age", { valueAsNumber: true })} />
             </div>
             <div className="space-y-1">
-              <Label>Residence</Label>
+              <Label>Résidence</Label>
               <Input {...form.register("patient.residence")} />
             </div>
             <div className="space-y-1">
@@ -233,11 +233,11 @@ export function ScreeningForm({
               <Input {...form.register("patient.profession")} />
             </div>
             <div className="space-y-1">
-              <Label>Telephone principal</Label>
+              <Label>Téléphone principal</Label>
               <Input {...form.register("patient.phone1")} />
             </div>
             <div className="space-y-1">
-              <Label>Telephone secondaire</Label>
+              <Label>Téléphone secondaire</Label>
               <Input {...form.register("patient.phone2")} />
             </div>
             <div className="space-y-1 md:col-span-2">
@@ -249,7 +249,7 @@ export function ScreeningForm({
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="radio" value="F" {...form.register("patient.sex")} />
-                  Feminin
+                  Féminin
                 </label>
               </div>
             </div>
@@ -259,7 +259,7 @@ export function ScreeningForm({
         <section className="soft-card space-y-3 p-4">
           <SectionHeader
             icon={AlertTriangle}
-            title="II. Facteurs de risque et antecedents"
+            title="II. Facteurs de risque et antécédents"
           />
           <div className="space-y-3">
             <div className="space-y-2">
@@ -303,7 +303,7 @@ export function ScreeningForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label>Annees depuis sevrage</Label>
+                  <Label>Années depuis sevrage</Label>
                   <Input
                     type="number"
                     disabled={doctorOnlySectionLocked}
@@ -319,7 +319,7 @@ export function ScreeningForm({
                 {[
                   { value: "JAMAIS", label: "Jamais" },
                   { value: "OCCASIONNELLE", label: "Occasionnelle" },
-                  { value: "REGULIERE", label: "Reguliere" },
+                  { value: "REGULIERE", label: "Régulière" },
                 ].map((option) => (
                   <label key={option.value} className="flex items-center gap-2 text-sm">
                     <input
@@ -335,7 +335,7 @@ export function ScreeningForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Activite physique (30 min)</Label>
+              <Label>Activité physique (30 min)</Label>
               <div className="flex flex-wrap gap-4">
                 {[
                   { value: "JAMAIS", label: "Jamais" },
@@ -360,7 +360,7 @@ export function ScreeningForm({
               name="riskFactors.personalHistory"
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label>Antecedents personnels</Label>
+                  <Label>Antécédents personnels</Label>
                   <div className="grid gap-2 md:grid-cols-3">
                     {["HTA", "DIABETE", "IRC", "AVC", "IDM"].map((item) => (
                       <label key={item} className="flex items-center gap-2 text-sm">
@@ -389,7 +389,7 @@ export function ScreeningForm({
               name="riskFactors.familyHistory"
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label>Antecedents familiaux</Label>
+                  <Label>Antécédents familiaux</Label>
                   <div className="grid gap-2 md:grid-cols-3">
                     {["HTA", "DIABETE", "AVC", "IDM", "MORT_SUBITE"].map((item) => (
                       <label key={item} className="flex items-center gap-2 text-sm">
@@ -470,14 +470,14 @@ export function ScreeningForm({
                 readOnly
                 {...form.register("vitalsBiology.bmi", { valueAsNumber: true })}
               />
-              <p className="text-xs text-muted-foreground">Calcule automatiquement selon poids et taille.</p>
+              <p className="text-xs text-muted-foreground">Calculé automatiquement selon poids et taille.</p>
             </div>
             <div className="space-y-1">
               <Label>Tour de taille (cm)</Label>
               <Input type="number" {...form.register("vitalsBiology.waistCm", { valueAsNumber: true })} />
             </div>
             <div className="space-y-1">
-              <Label>Glycemie (g/L)</Label>
+              <Label>Glycémie (g/L)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -491,16 +491,16 @@ export function ScreeningForm({
             aria-live="polite"
           >
             <p className="text-sm font-semibold text-brand-gray">
-              Aide a l&apos;interpretation (automatique)
+              Aide à l&apos;interprétation (automatique)
             </p>
             <p className="text-xs text-muted-foreground">
-              Informations derivees des constantes et du sexe du patient ; non modifiables ; ne se substituent pas
+              Informations dérivées des constantes et du sexe du patient ; non modifiables ; ne se substituent pas
               au jugement clinique.
             </p>
             {!vitalsGuidancePreview ? (
               <p className="text-sm text-muted-foreground">
-                Saisissez au moins une mesure exploitable (PA complete des deux bras, IMC, tour de taille ou
-                glycemie) pour afficher une synthese.
+                Saisissez au moins une mesure exploitable (PA complète des deux bras, IMC, tour de taille ou
+                glycémie) pour afficher une synthèse.
               </p>
             ) : (
               <ul className="space-y-3 text-sm text-brand-gray">
@@ -528,7 +528,7 @@ export function ScreeningForm({
                       {vitalsGuidancePreview.bmi.intervalLabel})
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Risque metabolique : {vitalsGuidancePreview.bmi.metabolicRisk}
+                      Risque métabolique : {vitalsGuidancePreview.bmi.metabolicRisk}
                     </div>
                   </li>
                 ) : null}
@@ -545,7 +545,7 @@ export function ScreeningForm({
                 ) : null}
                 {vitalsGuidancePreview.glucose ? (
                   <li className="space-y-1">
-                    <span className="font-medium text-brand-gray">Glycemie a jeun</span>
+                    <span className="font-medium text-brand-gray">Glycémie à jeun</span>
                     <div className="text-muted-foreground">
                       {vitalsGuidancePreview.glucose.valueGPerL} g/L — {vitalsGuidancePreview.glucose.status}
                     </div>
@@ -560,7 +560,7 @@ export function ScreeningForm({
         </section>
 
         <section className="soft-card space-y-3 p-4">
-          <SectionHeader icon={ClipboardCheck} title="IV. Interpretation globale" />
+          <SectionHeader icon={ClipboardCheck} title="IV. Interprétation globale" />
           <Controller
             control={form.control}
             name="interpretation.labels"
@@ -595,7 +595,7 @@ export function ScreeningForm({
           <Textarea
             disabled={doctorOnlySectionLocked}
             {...form.register("interpretation.other")}
-            placeholder="Autre interpretation..."
+            placeholder="Autre interprétation..."
           />
         </section>
 
@@ -603,8 +603,8 @@ export function ScreeningForm({
           <section className="soft-card space-y-3 p-4">
             <SectionHeader
               icon={ShieldCheck}
-              title="V. Evaluation du risque cardiovasculaire"
-              description="Patients de 40 ans ou plus (SCORE OMS)"
+              title="V. Évaluation du risque cardiovasculaire"
+              description="Patients de 40 ans ou moins (SCORE OMS)"
             />
             <Controller
               control={form.control}
@@ -616,17 +616,17 @@ export function ScreeningForm({
                     checked={Boolean(field.value)}
                     onCheckedChange={(checked) => field.onChange(Boolean(checked))}
                   />
-                  Evaluation activee (patients &gt;= 40 ans)
+                  Évaluation activée (patients &lt;= 40 ans)
                 </label>
               )}
             />
             <div className="grid gap-2 md:grid-cols-2">
               {[
                 { value: "FAIBLE", label: "Risque faible (<5%)" },
-                { value: "MODERE", label: "Risque modere (5-10%)" },
-                { value: "ELEVE", label: "Risque eleve (10-20%)" },
-                { value: "TRES_ELEVE", label: "Risque tres eleve (20-30%)" },
-                { value: "TRES_TRES_ELEVE", label: "Risque tres tres eleve (&gt;=30%)" },
+                { value: "MODERE", label: "Risque modéré (5-10%)" },
+                { value: "ELEVE", label: "Risque élevé (10-20%)" },
+                { value: "TRES_ELEVE", label: "Risque très élevé (20-30%)" },
+                { value: "TRES_TRES_ELEVE", label: "Risque très très élevé (&gt;=30%)" },
               ].map((option) => (
                 <label key={option.value} className="flex items-center gap-2 text-sm">
                   <input
@@ -650,7 +650,7 @@ export function ScreeningForm({
         <section className="soft-card space-y-3 p-4">
           <SectionHeader
             icon={Stethoscope}
-            title={`${showScoreOmsSection ? "VI" : "V"}. Orientation et decision medicale`}
+            title={`${showScoreOmsSection ? "VI" : "V"}. Orientation et décision médicale`}
           />
           <Controller
             control={form.control}
@@ -659,11 +659,11 @@ export function ScreeningForm({
               <div className="grid gap-2">
                 {[
                   "Risque faible sans HTA",
-                  "Risque modere sans HTA",
-                  "Hypertension arterielle",
-                  "Risque eleve",
-                  "Risque tres eleve",
-                  "Risque tres tres eleve",
+                  "Risque modéré sans HTA",
+                  "Hypertension artérielle",
+                  "Risque élevé",
+                  "Risque très élevé",
+                  "Risque très très élevé",
                 ].map((item) => (
                   <label key={item} className="flex items-center gap-2 text-sm">
                     <Checkbox
@@ -691,7 +691,7 @@ export function ScreeningForm({
             <div className="space-y-1">
               <Label className="flex items-center gap-2">
                 <CalendarClock className="h-4 w-4" />
-                Rendez-vous de controle (date)
+                Rendez-vous de contrôle (date)
               </Label>
               <Input
                 type="date"
@@ -717,14 +717,14 @@ export function ScreeningForm({
           />
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1">
-              <Label>Infirmier(ere)</Label>
+              <Label>Infirmier(ère)</Label>
               <Input
                 disabled={doctorOnlySectionLocked}
                 {...form.register("staffIdentity.nurseName")}
               />
             </div>
             <div className="space-y-1">
-              <Label>Medecin</Label>
+              <Label>Médecin</Label>
               <Input
                 disabled={doctorOnlySectionLocked}
                 {...form.register("staffIdentity.doctorName")}
@@ -736,8 +736,8 @@ export function ScreeningForm({
         <section className="soft-card space-y-3 p-4">
           <SectionHeader
             icon={HeartHandshake}
-            title="Conseils hygieno-dietetiques"
-            description="5 reflexes pour proteger votre coeur"
+            title="Conseils hygiéno-diététiques"
+            description="5 réflexes pour protéger votre cœur"
           />
           <HygienoDietChecklist
             control={form.control}
@@ -792,8 +792,8 @@ export function ScreeningForm({
             : doctorOnlySectionLocked
               ? "Enregistrer"
               : initialRecord
-                ? "Completer, valider et generer PDF"
-                : "Valider et generer PDF"}
+                ? "Compléter, valider et générer PDF"
+                : "Valider et générer PDF"}
         </Button>
       </div>
     </form>

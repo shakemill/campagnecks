@@ -75,7 +75,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       {
         message:
-          "Suppression impossible: cette campagne contient deja des fiches de depistage liees.",
+          "Suppression impossible : cette campagne contient déjà des fiches de dépistage liées.",
       },
       { status: 409 },
     );
@@ -118,7 +118,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: "Campagne introuvable." }, { status: 404 });
   }
   if (campaign.status === "ARCHIVED") {
-    return NextResponse.json({ message: "Cette campagne est deja cloturee." }, { status: 409 });
+    return NextResponse.json({ message: "Cette campagne est déjà clôturée." }, { status: 409 });
   }
 
   await storage.patchState((draft) => {

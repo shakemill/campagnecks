@@ -46,14 +46,14 @@ describe("classifyBloodPressure", () => {
     expect(r.classification).toContain("optimale");
   });
 
-  it("HTA systolique isolee pour 150/85", () => {
+  it("HTA systolique isolée pour 150/85", () => {
     const r = classifyBloodPressure(150, 85);
-    expect(r.classification).toContain("isolee");
+    expect(r.classification).toContain("isolée");
   });
 
-  it("signale une classification indeterminee pour une zone grise", () => {
+  it("signale une classification indéterminée pour une zone grise", () => {
     const r = classifyBloodPressure(175, 95);
-    expect(r.classification).toContain("indeterminee");
+    expect(r.classification).toContain("indéterminée");
   });
 });
 
@@ -71,9 +71,9 @@ describe("classifyWaist", () => {
 });
 
 describe("classifyFastingGlucoseGPerL", () => {
-  it("1,15 g/L : hyperglycemie a jeun / prediabete", () => {
+  it("1,15 g/L : hyperglycémie à jeun / prédiabète", () => {
     const r = classifyFastingGlucoseGPerL(1.15);
-    expect(r.status).toContain("prediabete");
+    expect(r.status).toContain("prédiabète");
   });
 });
 
@@ -87,14 +87,14 @@ describe("buildVitalsGuidance", () => {
     ).toBeUndefined();
   });
 
-  it("inclut la glycemie seule lorsque les autres mesures sont absentes", () => {
+  it("inclut la glycémie seule lorsque les autres mesures sont absentes", () => {
     const v = emptyVitals();
     v.fastingGlucoseGl = 1.0;
     const g = buildVitalsGuidance({
       patient: { sex: "F" } as ScreeningRecord["patient"],
       vitalsBiology: v,
     });
-    expect(g?.glucose?.status).toContain("Normoglycemie");
+    expect(g?.glucose?.status).toContain("Normoglycémie");
     expect(g?.bloodPressureAvg).toBeUndefined();
   });
 });

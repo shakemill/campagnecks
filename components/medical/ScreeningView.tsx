@@ -26,7 +26,7 @@ const SMOKING_LABEL: Record<ScreeningRecord["riskFactors"]["smoking"], string> =
 const ALCOHOL_LABEL: Record<ScreeningRecord["riskFactors"]["alcohol"], string> = {
   JAMAIS: "Jamais",
   OCCASIONNELLE: "Occasionnelle",
-  REGULIERE: "Reguliere",
+  REGULIERE: "Régulière",
 };
 
 const ACTIVITY_LABEL: Record<ScreeningRecord["riskFactors"]["physicalActivity"], string> = {
@@ -40,25 +40,25 @@ const RISK_LEVEL_LABEL: Record<
   string
 > = {
   FAIBLE: "Risque faible (<5%)",
-  MODERE: "Risque modere (5-10%)",
-  ELEVE: "Risque eleve (10-20%)",
-  TRES_ELEVE: "Risque tres eleve (20-30%)",
-  TRES_TRES_ELEVE: "Risque tres tres eleve (>=30%)",
+  MODERE: "Risque modéré (5-10%)",
+  ELEVE: "Risque élevé (10-20%)",
+  TRES_ELEVE: "Risque très élevé (20-30%)",
+  TRES_TRES_ELEVE: "Risque très très élevé (>=30%)",
 };
 
 const ADVICE_LABEL: Record<keyof ScreeningRecord["hygienoDietAdvice"], string> = {
-  reduceSaltBouillon: "Arreter les cubes et bouillons",
-  reduceSaltMeals: "Reduire la quantite de sel",
-  avoidProcessedFood: "Eviter les aliments transformes",
-  avoidSedentaryLifestyle: "Eviter la sedentarite",
-  activity30mFiveDays: "30 minutes d'activite, 5 jours/semaine",
-  addVegetables: "Moitie de l'assiette en legumes",
-  eatFruitsRegularly: "Consommer regulierement des fruits",
+  reduceSaltBouillon: "Arrêter les cubes et bouillons",
+  reduceSaltMeals: "Réduire la quantité de sel",
+  avoidProcessedFood: "Éviter les aliments transformés",
+  avoidSedentaryLifestyle: "Éviter la sédentarité",
+  activity30mFiveDays: "30 minutes d'activité, 5 jours/semaine",
+  addVegetables: "Moitié de l'assiette en légumes",
+  eatFruitsRegularly: "Consommer régulièrement des fruits",
   replaceSugaryDrinks: "Remplacer sodas par eau",
-  stopSmoking: "Arret du tabac",
+  stopSmoking: "Arrêt du tabac",
   reduceAlcohol: "Limiter l'alcool",
-  monitorBloodPressureWeightSugar: "Suivre tension, poids, glycemie",
-  consultIfHighRisk: "Consulter rapidement si risque eleve",
+  monitorBloodPressureWeightSugar: "Suivre tension, poids, glycémie",
+  consultIfHighRisk: "Consulter rapidement si risque élevé",
 };
 
 type Row = {
@@ -122,39 +122,39 @@ export function ScreeningView({ record }: ScreeningViewProps) {
   const showScoreOmsSection =
     typeof record.patient.age === "number" &&
     Number.isFinite(record.patient.age) &&
-    record.patient.age >= 40;
+    record.patient.age <= 40;
 
   const checkedAdvice = (
     Object.keys(ADVICE_LABEL) as Array<keyof typeof ADVICE_LABEL>
   ).filter((key) => record.hygienoDietAdvice[key]);
 
   const identificationRows: Row[] = [
-    { label: "N d'enregistrement", value: record.registrationNumber },
+    { label: "N° d'enregistrement", value: record.registrationNumber },
     { label: "Date", value: formatDateFr(record.patient.date) },
-    { label: "Nom et prenom", value: record.patient.fullName },
-    { label: "Age", value: `${record.patient.age} ans` },
-    { label: "Sexe", value: record.patient.sex === "M" ? "Masculin" : "Feminin" },
-    { label: "Residence", value: record.patient.residence },
+    { label: "Nom et prénom", value: record.patient.fullName },
+    { label: "Âge", value: `${record.patient.age} ans` },
+    { label: "Sexe", value: record.patient.sex === "M" ? "Masculin" : "Féminin" },
+    { label: "Résidence", value: record.patient.residence },
     { label: "Profession", value: record.patient.profession },
-    { label: "Telephone principal", value: record.patient.phone1 },
-    { label: "Telephone secondaire", value: record.patient.phone2 },
+    { label: "Téléphone principal", value: record.patient.phone1 },
+    { label: "Téléphone secondaire", value: record.patient.phone2 },
   ];
 
   const riskRows: Row[] = [
     { label: "Tabagisme", value: SMOKING_LABEL[record.riskFactors.smoking] },
     { label: "Pack-years", value: record.riskFactors.packYears },
-    { label: "Annees depuis sevrage", value: record.riskFactors.yearsSinceQuit },
+    { label: "Années depuis sevrage", value: record.riskFactors.yearsSinceQuit },
     { label: "Consommation d'alcool", value: ALCOHOL_LABEL[record.riskFactors.alcohol] },
     {
-      label: "Activite physique (30 min)",
+      label: "Activité physique (30 min)",
       value: ACTIVITY_LABEL[record.riskFactors.physicalActivity],
     },
     {
-      label: "Antecedents personnels",
+      label: "Antécédents personnels",
       value: <ChipList items={record.riskFactors.personalHistory} />,
     },
     {
-      label: "Antecedents familiaux",
+      label: "Antécédents familiaux",
       value: <ChipList items={record.riskFactors.familyHistory} />,
     },
     { label: "Traitement en cours", value: record.riskFactors.ongoingTreatment },
@@ -177,7 +177,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
                 value: record.vitalsGuidance.bloodPressureAvg.cardiovascularRisk,
               },
               {
-                label: "Action recommandee (PA)",
+                label: "Action recommandée (PA)",
                 value: record.vitalsGuidance.bloodPressureAvg.action,
               },
             ]
@@ -186,7 +186,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
           ? [
               { label: "IMC — statut", value: `${record.vitalsGuidance.bmi.value} — ${record.vitalsGuidance.bmi.weightStatus}` },
               { label: "Intervalle IMC", value: record.vitalsGuidance.bmi.intervalLabel },
-              { label: "Risque metabolique (IMC)", value: record.vitalsGuidance.bmi.metabolicRisk },
+              { label: "Risque métabolique (IMC)", value: record.vitalsGuidance.bmi.metabolicRisk },
             ]
           : []),
         ...(record.vitalsGuidance.waist
@@ -196,7 +196,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
                 value: `${record.vitalsGuidance.waist.value} cm — ${record.vitalsGuidance.waist.thresholdLabel}`,
               },
               {
-                label: "Risque cardiometabolique (perimetre)",
+                label: "Risque cardiométabolique (périmètre)",
                 value: record.vitalsGuidance.waist.cardiometabolicRisk,
               },
             ]
@@ -204,14 +204,14 @@ export function ScreeningView({ record }: ScreeningViewProps) {
         ...(record.vitalsGuidance.glucose
           ? [
               {
-                label: "Glycemie — statut",
+                label: "Glycémie — statut",
                 value: `${record.vitalsGuidance.glucose.valueGPerL} g/L — ${record.vitalsGuidance.glucose.status}`,
               },
-              { label: "Risque clinique (glycemie)", value: record.vitalsGuidance.glucose.clinicalRisk },
+              { label: "Risque clinique (glycémie)", value: record.vitalsGuidance.glucose.clinicalRisk },
             ]
           : []),
         {
-          label: "Synthese calculee le",
+          label: "Synthèse calculée le",
           value: formatDateFr(record.vitalsGuidance.computedAt),
         },
       ]
@@ -230,7 +230,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
     { label: "Taille (cm)", value: record.vitalsBiology.heightCm },
     { label: "IMC", value: record.vitalsBiology.bmi },
     { label: "Tour de taille (cm)", value: record.vitalsBiology.waistCm },
-    { label: "Glycemie a jeun (g/L)", value: record.vitalsBiology.fastingGlucoseGl },
+    { label: "Glycémie à jeun (g/L)", value: record.vitalsBiology.fastingGlucoseGl },
   ];
 
   const interpretationRows: Row[] = [
@@ -238,12 +238,12 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       label: "Diagnostics retenus",
       value: <ChipList items={record.interpretation.labels} />,
     },
-    { label: "Autre interpretation", value: record.interpretation.other },
+    { label: "Autre interprétation", value: record.interpretation.other },
   ];
 
   const cardioRiskRows: Row[] = [
     {
-      label: "Evaluation activee",
+      label: "Évaluation activée",
       value: record.cardiovascularRisk.enabled ? "Oui" : "Non applicable",
     },
     {
@@ -257,17 +257,17 @@ export function ScreeningView({ record }: ScreeningViewProps) {
 
   const orientationRows: Row[] = [
     {
-      label: "Decisions",
+      label: "Décisions",
       value: <ChipList items={record.orientationDecision.items} />,
     },
     { label: "Autre orientation", value: record.orientationDecision.other },
-    { label: "Rendez-vous de controle", value: formatDateFr(record.orientationDecision.followUpDate) },
+    { label: "Rendez-vous de contrôle", value: formatDateFr(record.orientationDecision.followUpDate) },
     { label: "Heure", value: record.orientationDecision.followUpTime },
   ];
 
   const staffRows: Row[] = [
-    { label: "Infirmier(ere)", value: record.staffIdentity.nurseName },
-    { label: "Medecin", value: record.staffIdentity.doctorName },
+    { label: "Infirmier(ère)", value: record.staffIdentity.nurseName },
+    { label: "Médecin", value: record.staffIdentity.doctorName },
   ];
 
   const adviceRows: Row[] = (Object.keys(ADVICE_LABEL) as Array<keyof typeof ADVICE_LABEL>).map(
@@ -276,10 +276,10 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       value: record.hygienoDietAdvice[key] ? (
         <span className="inline-flex items-center gap-1 rounded-full bg-brand-green/10 px-2.5 py-0.5 text-xs font-medium text-brand-green">
           <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
-          Coche
+          Coché
         </span>
       ) : (
-        <span className="text-xs text-muted-foreground">Non coche</span>
+        <span className="text-xs text-muted-foreground">Non coché</span>
       ),
     }),
   );
@@ -292,7 +292,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       </section>
 
       <section className="soft-card space-y-4 p-4">
-        <SectionHeader icon={AlertTriangle} title="II. Facteurs de risque et antecedents" />
+        <SectionHeader icon={AlertTriangle} title="II. Facteurs de risque et antécédents" />
         <StripedTable rows={riskRows} />
       </section>
 
@@ -302,7 +302,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
         {guidanceRows?.length ? (
           <div className="space-y-2 pt-2">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Aide a l&apos;interpretation (automatique)
+              Aide à l&apos;interprétation (automatique)
             </p>
             <StripedTable rows={guidanceRows} />
           </div>
@@ -310,7 +310,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       </section>
 
       <section className="soft-card space-y-4 p-4">
-        <SectionHeader icon={ClipboardCheck} title="IV. Interpretation globale" />
+        <SectionHeader icon={ClipboardCheck} title="IV. Interprétation globale" />
         <StripedTable rows={interpretationRows} />
       </section>
 
@@ -318,8 +318,8 @@ export function ScreeningView({ record }: ScreeningViewProps) {
         <section className="soft-card space-y-4 p-4">
           <SectionHeader
             icon={ShieldCheck}
-            title="V. Evaluation du risque cardiovasculaire"
-            description="Patients de 40 ans ou plus (SCORE OMS)"
+            title="V. Évaluation du risque cardiovasculaire"
+            description="Patients de 40 ans ou moins (SCORE OMS)"
           />
           <StripedTable rows={cardioRiskRows} />
         </section>
@@ -328,7 +328,7 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       <section className="soft-card space-y-4 p-4">
         <SectionHeader
           icon={Stethoscope}
-          title={`${showScoreOmsSection ? "VI" : "V"}. Orientation et decision medicale`}
+          title={`${showScoreOmsSection ? "VI" : "V"}. Orientation et décision médicale`}
         />
         <StripedTable rows={orientationRows} />
       </section>
@@ -344,8 +344,8 @@ export function ScreeningView({ record }: ScreeningViewProps) {
       <section className="soft-card space-y-4 p-4">
         <SectionHeader
           icon={HeartHandshake}
-          title="Conseils hygieno-dietetiques"
-          description={`5 reflexes pour proteger votre coeur (${checkedAdvice.length}/${adviceRows.length} coches)`}
+          title="Conseils hygiéno-diététiques"
+          description={`5 réflexes pour protéger votre cœur (${checkedAdvice.length}/${adviceRows.length} cochés)`}
         />
         <StripedTable rows={adviceRows} />
       </section>

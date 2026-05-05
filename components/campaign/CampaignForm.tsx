@@ -17,7 +17,7 @@ export function CampaignForm() {
   const form = useForm<CampaignInput>({
     resolver: zodResolver(campaignSchema),
     defaultValues: {
-      name: "Campagne de depistage des MCV",
+      name: "Campagne de dépistage des MCV",
       startsAt: new Date().toISOString().slice(0, 10),
       endsAt: new Date().toISOString().slice(0, 10),
     },
@@ -34,19 +34,19 @@ export function CampaignForm() {
       });
 
       if (!response.ok) {
-        toast.error("Creation de campagne impossible.");
+        toast.error("Création de campagne impossible.");
         return;
       }
-      toast.success("Campagne creee.");
+      toast.success("Campagne créée.");
       form.reset({
-        name: "Campagne de depistage des MCV",
+        name: "Campagne de dépistage des MCV",
         startsAt: new Date().toISOString().slice(0, 10),
         endsAt: new Date().toISOString().slice(0, 10),
       });
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error("Erreur reseau lors de la creation.");
+      toast.error("Erreur réseau lors de la création.");
     }
   };
 
@@ -60,7 +60,7 @@ export function CampaignForm() {
           </div>
           <div className="space-y-1">
             <Label className="flex items-center gap-2">
-              <CalendarRange className="h-4 w-4" /> Date de debut
+              <CalendarRange className="h-4 w-4" /> Date de début
             </Label>
             <Input type="date" {...form.register("startsAt")} />
           </div>
@@ -78,7 +78,7 @@ export function CampaignForm() {
         ) : (
           <PlusCircle className="h-4 w-4" />
         )}
-        {isSubmitting ? "Creation en cours..." : "Creer la campagne"}
+        {isSubmitting ? "Création en cours..." : "Créer la campagne"}
       </Button>
     </form>
   );
@@ -101,7 +101,7 @@ export function DeleteCampaignButton({ campaignId, campaignName }: DeleteCampaig
 
   const onDelete = async () => {
     const confirmed = window.confirm(
-      `Supprimer la campagne "${campaignName}" ? Cette action est irreversible.`,
+      `Supprimer la campagne « ${campaignName} » ? Cette action est irréversible.`,
     );
     if (!confirmed || isDeleting) return;
 
@@ -115,11 +115,11 @@ export function DeleteCampaignButton({ campaignId, campaignName }: DeleteCampaig
         toast.error(payload.message ?? "Suppression de la campagne impossible.");
         return;
       }
-      toast.success("Campagne supprimee.");
+      toast.success("Campagne supprimée.");
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error("Erreur reseau lors de la suppression.");
+      toast.error("Erreur réseau lors de la suppression.");
     } finally {
       setIsDeleting(false);
     }
@@ -147,7 +147,7 @@ export function CloseCampaignButton({ campaignId, campaignName, disabled }: Clos
 
   const onCloseCampaign = async () => {
     const confirmed = window.confirm(
-      `Cloturer la campagne "${campaignName}" ? Apres cloture, aucune nouvelle fiche ne pourra etre creee.`,
+      `Clôturer la campagne « ${campaignName} » ? Après clôture, aucune nouvelle fiche ne pourra être créée.`,
     );
     if (!confirmed || isClosing || disabled) return;
 
@@ -159,14 +159,14 @@ export function CloseCampaignButton({ campaignId, campaignName, disabled }: Clos
       );
       const payload = (await response.json().catch(() => ({}))) as { message?: string };
       if (!response.ok) {
-        toast.error(payload.message ?? "Cloture de campagne impossible.");
+        toast.error(payload.message ?? "Clôture de campagne impossible.");
         return;
       }
-      toast.success("Campagne cloturee.");
+      toast.success("Campagne clôturée.");
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error("Erreur reseau lors de la cloture.");
+      toast.error("Erreur réseau lors de la clôture.");
     } finally {
       setIsClosing(false);
     }
@@ -180,10 +180,10 @@ export function CloseCampaignButton({ campaignId, campaignName, disabled }: Clos
       disabled={disabled || isClosing}
       onClick={onCloseCampaign}
       className="gap-1.5 border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-700"
-      aria-label={`Cloturer la campagne ${campaignName}`}
+      aria-label={`Clôturer la campagne ${campaignName}`}
     >
       {isClosing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
-      Cloturer
+      Clôturer
     </Button>
   );
 }

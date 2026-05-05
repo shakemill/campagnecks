@@ -10,7 +10,7 @@ type TopBarProps = {
 };
 
 export function TopBar({ fullName, role }: TopBarProps) {
-  const roleLabel = role === "MEDECIN" ? "Medecin" : "Infirmier / Technicien";
+  const roleLabel = role === "MEDECIN" ? "Médecin" : "Infirmier / Technicien";
 
   return (
     <header className="soft-card flex flex-wrap items-center justify-between gap-3 px-4 py-3">
@@ -20,7 +20,7 @@ export function TopBar({ fullName, role }: TopBarProps) {
         </div>
         <div className="min-w-0">
           <p className="font-heading text-base font-semibold text-brand-gray">
-            Campagne de depistage des MCV
+            Campagne de dépistage des MCV
           </p>
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <UserRound className="h-3.5 w-3.5" />

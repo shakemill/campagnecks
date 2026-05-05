@@ -16,7 +16,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Cks Manager - Campagne MCV",
-  description: "Digitalisation de la campagne de depistage cardiovasculaire",
+  description: "Digitalisation de la campagne de dépistage cardiovasculaire",
 };
 
 export default function RootLayout({

@@ -8,7 +8,7 @@ export default async function FeuilleCirculationPage() {
       <FeuilleCirculation
         steps={[
           { label: "Accueil", done: true },
-          { label: "Medecin", done: false },
+          { label: "Médecin", done: false },
           { label: "Pharmacie", done: false },
           { label: "Caisse", done: false },
         ]}

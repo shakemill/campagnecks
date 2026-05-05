@@ -29,7 +29,7 @@ export async function sendCredentialsEmail(
   const loginUrl = `${appBaseUrl.replace(/\/$/, "")}/login`;
 
   if (!host || !user || !pass) {
-    throw new Error("Configuration SMTP incomplete.");
+    throw new Error("Configuration SMTP incomplète.");
   }
 
   const transporter = nodemailer.createTransport({
@@ -49,9 +49,9 @@ export async function sendCredentialsEmail(
     text: [
       `Bonjour ${params.firstName},`,
       "",
-      `Votre compte d'acces pour la campagne "${params.campaignName}" est actif.`,
-      `Mot de passe temporaire: ${params.temporaryPassword}`,
-      "Vous devez modifier ce mot de passe a votre premiere connexion.",
+      `Votre compte d'accès pour la campagne « ${params.campaignName} » est actif.`,
+      `Mot de passe temporaire : ${params.temporaryPassword}`,
+      "Vous devez modifier ce mot de passe à votre première connexion.",
       "",
       `Lien de connexion: ${loginUrl}`,
     ].join("\n"),
@@ -59,10 +59,10 @@ export async function sendCredentialsEmail(
       <div style="font-family: Inter, Arial, sans-serif; color: #2c2c2c; line-height: 1.6;">
         <h2 style="margin: 0 0 12px; color: #525252;">Connexion campagne MCV</h2>
         <p>Bonjour <strong>${params.firstName}</strong>,</p>
-        <p>Votre compte d'acces pour la campagne <strong>${params.campaignName}</strong> est actif.</p>
+        <p>Votre compte d'accès pour la campagne <strong>${params.campaignName}</strong> est actif.</p>
         <p>
-          Mot de passe temporaire: <strong>${params.temporaryPassword}</strong><br />
-          Vous devez modifier ce mot de passe a votre premiere connexion.
+          Mot de passe temporaire : <strong>${params.temporaryPassword}</strong><br />
+          Vous devez modifier ce mot de passe à votre première connexion.
         </p>
         <p style="margin: 20px 0;">
           <a
@@ -72,7 +72,7 @@ export async function sendCredentialsEmail(
             Se connecter
           </a>
         </p>
-        <p style="font-size: 12px; color: #666;">Si le bouton ne fonctionne pas, copiez ce lien: ${loginUrl}</p>
+        <p style="font-size: 12px; color: #666;">Si le bouton ne fonctionne pas, copiez ce lien : ${loginUrl}</p>
       </div>
     `,
   });

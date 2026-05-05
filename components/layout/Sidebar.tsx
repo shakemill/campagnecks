@@ -45,7 +45,7 @@ export function Sidebar({ role }: SidebarProps) {
         <div className="min-w-0">
           <p className="font-heading text-lg font-bold leading-tight">Cks Manager</p>
           <p className="truncate text-xs text-zinc-200">
-            Role: {role === "MEDECIN" ? "Medecin" : "Infirmier/Tech"}
+            Rôle : {role === "MEDECIN" ? "Médecin" : "Infirmier/Tech"}
           </p>
         </div>
       </div>

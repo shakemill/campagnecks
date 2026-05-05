@@ -19,35 +19,35 @@ export default async function UsersPage() {
       <PageHeader
         icon={Users}
         title="Utilisateurs"
-        subtitle="Comptes d'acces lies aux campagnes"
+        subtitle="Comptes d'accès liés aux campagnes"
       />
 
       <DataCard
-        title="Creation des comptes d'acces"
+        title="Création des comptes d'accès"
         icon={UserPlus}
-        description="Chaque compte doit etre rattache a une campagne active"
+        description="Chaque compte doit être rattaché à une campagne active"
       >
         {isDoctor ? (
           <CampaignUserForm campaigns={state.campaigns} />
         ) : (
-          <p className="text-sm text-muted-foreground">Lecture seule pour ce role.</p>
+          <p className="text-sm text-muted-foreground">Lecture seule pour ce rôle.</p>
         )}
       </DataCard>
 
-      <DataCard title="Comptes enregistres" icon={ListChecks}>
+      <DataCard title="Comptes enregistrés" icon={ListChecks}>
         {state.campaignUsers.length ? (
           <DataTable
             columns={[
               { key: "name", label: "Nom complet" },
               { key: "email", label: "Email" },
-              { key: "role", label: "Role" },
-              { key: "campaign", label: "Campagne liee" },
+              { key: "role", label: "Rôle" },
+              { key: "campaign", label: "Campagne liée" },
               { key: "status", label: "Statut" },
             ]}
             data={state.campaignUsers.map((user) => ({
               name: `${user.title} ${user.firstName} ${user.lastName}`,
               email: user.email,
-              role: user.role === "MEDECIN" ? "Medecin" : "Infirmier/Technicien",
+              role: user.role === "MEDECIN" ? "Médecin" : "Infirmier/Technicien",
               campaign: campaignsById.get(user.campaignId)?.name ?? "Campagne introuvable",
               status: user.isActive ? "Actif" : "Inactif",
             }))}

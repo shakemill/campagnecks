@@ -8,7 +8,7 @@ export function FacturePreview({ total, assureurPart }: FacturePreviewProps) {
 
   return (
     <section className="soft-card p-4">
-      <h3 className="font-heading text-lg font-semibold text-brand-gray">Apercu facture</h3>
+      <h3 className="font-heading text-lg font-semibold text-brand-gray">Aperçu facture</h3>
       <div className="mt-3 space-y-2 text-sm">
         <p className="flex justify-between">
           <span>Total</span>

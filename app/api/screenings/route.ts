@@ -40,13 +40,13 @@ export async function POST(request: NextRequest) {
   }
   if (!existing && selectedCampaign.status !== "ACTIVE") {
     return NextResponse.json(
-      { message: "Creation impossible: la campagne selectionnee est cloturee." },
+      { message: "Création impossible : la campagne sélectionnée est clôturée." },
       { status: 409 },
     );
   }
   if (existing && existing.campaignId !== parsed.data.campaignId) {
     return NextResponse.json(
-      { message: "Modification impossible: la campagne de la fiche ne peut pas etre changee." },
+      { message: "Modification impossible : la campagne de la fiche ne peut pas être changée." },
       { status: 409 },
     );
   }

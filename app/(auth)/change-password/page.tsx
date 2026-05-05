@@ -22,7 +22,7 @@ export default async function ChangePasswordPage() {
               Changer le mot de passe
             </h1>
             <p className="text-sm text-muted-foreground">
-              Ce changement est obligatoire a la premiere connexion.
+              Ce changement est obligatoire à la première connexion.
             </p>
           </div>
         </div>

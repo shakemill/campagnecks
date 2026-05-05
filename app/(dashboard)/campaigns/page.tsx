@@ -19,27 +19,27 @@ export default async function CampaignsPage() {
       <PageHeader
         icon={ClipboardList}
         title="Campagnes"
-        subtitle="Gestion des campagnes et des comptes d'acces"
+        subtitle="Gestion des campagnes et des comptes d'accès"
       />
 
       <DataCard
-        title="Etape 1 - Creation d'une campagne"
+        title="Étape 1 — Création d'une campagne"
         icon={CalendarRange}
-        description="Definissez la periode et le libelle de la campagne"
+        description="Définissez la période et le libellé de la campagne"
       >
         {isDoctor ? (
           <CampaignForm />
         ) : (
-          <p className="text-sm text-muted-foreground">Lecture seule pour ce role.</p>
+          <p className="text-sm text-muted-foreground">Lecture seule pour ce rôle.</p>
         )}
       </DataCard>
 
-      <DataCard title="Campagnes enregistrees" icon={ListChecks}>
+      <DataCard title="Campagnes enregistrées" icon={ListChecks}>
         {state.campaigns.length ? (
           <DataTable
             columns={[
               { key: "name", label: "Nom" },
-              { key: "startsAt", label: "Debut" },
+              { key: "startsAt", label: "Début" },
               { key: "endsAt", label: "Fin" },
               { key: "status", label: "Statut" },
               ...(isDoctor ? [{ key: "actions" as const, label: "Actions" }] : []),

@@ -40,14 +40,14 @@ export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
         body: JSON.stringify(values),
       });
       if (!response.ok) {
-        toast.error("Creation du compte impossible.");
+        toast.error("Création du compte impossible.");
         return;
       }
-      toast.success("Compte cree et identifiants envoyes par email.");
+      toast.success("Compte créé et identifiants envoyés par e-mail.");
       form.reset({ ...form.getValues(), firstName: "", lastName: "", email: "" });
     } catch (error) {
       console.error(error);
-      toast.error("Erreur reseau lors de la creation du compte.");
+      toast.error("Erreur réseau lors de la création du compte.");
     }
   };
 
@@ -56,14 +56,14 @@ export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
       <fieldset disabled={isSubmitting} className="contents">
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1 md:col-span-2">
-            <Label>Campagne liee</Label>
+            <Label>Campagne liée</Label>
             <Controller
               control={form.control}
               name="campaignId"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selectionner une campagne active" />
+                    <SelectValue placeholder="Sélectionner une campagne active" />
                   </SelectTrigger>
                   <SelectContent>
                     {selectableCampaigns.map((campaign) => (
@@ -80,7 +80,7 @@ export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
             ) : null}
           </div>
           <div className="space-y-1">
-            <Label>Prenom</Label>
+            <Label>Prénom</Label>
             <Input {...form.register("firstName")} />
           </div>
           <div className="space-y-1">
@@ -108,7 +108,7 @@ export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
             />
           </div>
           <div className="space-y-1">
-            <Label>Role</Label>
+            <Label>Rôle</Label>
             <Controller
               control={form.control}
               name="role"
@@ -118,7 +118,7 @@ export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MEDECIN">Medecin</SelectItem>
+                    <SelectItem value="MEDECIN">Médecin</SelectItem>
                     <SelectItem value="INFIRMIER_TECH">Infirmier/Technicien labo</SelectItem>
                   </SelectContent>
                 </Select>
@@ -139,7 +139,7 @@ export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
         ) : (
           <UserPlus className="h-4 w-4" />
         )}
-        {isSubmitting ? "Creation en cours..." : "Creer le compte"}
+        {isSubmitting ? "Création en cours..." : "Créer le compte"}
       </Button>
     </form>
   );

@@ -19,7 +19,7 @@ const PERIOD_OPTIONS: Array<{ key: PeriodFilter; label: string }> = [
   { key: "today", label: "Aujourd'hui" },
   { key: "yesterday", label: "Hier" },
   { key: "last7", label: "7 derniers jours" },
-  { key: "lastWeek", label: "Semaine passee" },
+  { key: "lastWeek", label: "Semaine passée" },
   { key: "thisMonth", label: "Ce mois" },
   { key: "all", label: "Tout" },
 ];
@@ -95,7 +95,7 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
     const scoreOmsEligible =
       typeof item.patient.age === "number" &&
       Number.isFinite(item.patient.age) &&
-      item.patient.age >= 40;
+      item.patient.age <= 40;
     return {
       registrationNumber: item.registrationNumber,
       patient: item.patient.fullName,
@@ -104,7 +104,7 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
       status: isCompleted ? (
         <span className="inline-flex items-center gap-1 rounded-full bg-brand-green/10 px-2.5 py-0.5 text-xs font-medium text-brand-green">
           <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
-          Terminee
+          Terminée
         </span>
       ) : (
         <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
@@ -152,7 +152,7 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
     <div className="space-y-4">
       <PageHeader
         icon={Stethoscope}
-        title="Fiches de depistage"
+        title="Fiches de dépistage"
         subtitle="Historique et suivi des fiches MCV"
         actions={
           <Link
@@ -166,9 +166,9 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
       />
 
       <DataCard
-        title="Filtrer par periode"
+        title="Filtrer par période"
         icon={Clock}
-        description={`Resultats: ${filteredScreenings.length} fiche(s)`}
+        description={`Résultats : ${filteredScreenings.length} fiche(s)`}
       >
         <div className="flex flex-wrap gap-2">
           {PERIOD_OPTIONS.map((option) => {
@@ -191,7 +191,7 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
       </DataCard>
 
       {session.user.role === "MEDECIN" ? (
-        <DataCard title="Fiches en attente de completion medicale" icon={Clock}>
+        <DataCard title="Fiches en attente de complétion médicale" icon={Clock}>
           {pendingForDoctor.length ? (
             <div className="space-y-2">
               {pendingForDoctor.map((item) => (
@@ -217,7 +217,7 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Aucune fiche en attente de completion medicale.
+              Aucune fiche en attente de complétion médicale.
             </p>
           )}
         </DataCard>
@@ -227,7 +227,7 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
         {rows.length ? (
           <DataTable
             columns={[
-              { key: "registrationNumber", label: "N d'enregistrement" },
+              { key: "registrationNumber", label: "N° d'enregistrement" },
               { key: "patient", label: "Patient" },
               { key: "date", label: "Date" },
               { key: "risk", label: "Risque" },
@@ -237,7 +237,7 @@ export default async function ScreeningsPage({ searchParams }: ScreeningsPagePro
             data={rows}
           />
         ) : (
-          <EmptyState entity="fiches de depistage" />
+          <EmptyState entity="fiches de dépistage" />
         )}
       </DataCard>
     </div>

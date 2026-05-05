@@ -140,47 +140,47 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
 
   const personalHistoryMap: Record<string, string> = {
     HTA: "HTA",
-    DIABETE: "Diabete",
+    DIABETE: "Diabète",
     IRC: "IRC",
     AVC: "AVC",
     IDM: "Infarctus du myocarde",
   };
   const familyHistoryMap: Record<string, string> = {
     HTA: "HTA",
-    DIABETE: "Diabete",
+    DIABETE: "Diabète",
     AVC: "AVC",
     IDM: "IDM",
     MORT_SUBITE: "Mort subite",
   };
   const interpretationMap: Record<string, string> = {
-    DEP_NORM: "Depistage normal",
+    DEP_NORM: "Dépistage normal",
     HTA: "HTA",
-    DIABETE: "Diabete",
-    PREDIABETE: "Prediabete",
-    OBESITE: "Obesite",
+    DIABETE: "Diabète",
+    PREDIABETE: "Prédiabète",
+    OBESITE: "Obésité",
     SURPOIDS: "Surpoids",
-    OBESITE_ABDOMINALE: "Obesite abdominale",
+    OBESITE_ABDOMINALE: "Obésité abdominale",
   };
   const riskMap: Record<string, string> = {
     FAIBLE: "Risque faible (<5%)",
-    MODERE: "Risque modere (5-10%)",
-    ELEVE: "Risque eleve (10-20%)",
-    TRES_ELEVE: "Risque tres eleve (20-30%)",
-    TRES_TRES_ELEVE: "Risque tres tres eleve (>=30%)",
+    MODERE: "Risque modéré (5-10%)",
+    ELEVE: "Risque élevé (10-20%)",
+    TRES_ELEVE: "Risque très élevé (20-30%)",
+    TRES_TRES_ELEVE: "Risque très très élevé (>=30%)",
   };
   const adviceMap: Record<string, string> = {
-    reduceSaltBouillon: "Arreter les cubes et bouillons d'assaisonnement",
-    reduceSaltMeals: "Reduire au maximum la quantite de sel",
-    avoidProcessedFood: "Eviter les aliments transformes",
-    avoidSedentaryLifestyle: "Eviter la sedentarite",
-    activity30mFiveDays: "30 min d'activite physique moderee (>=5 jours/semaine)",
-    addVegetables: "Moitie de l'assiette en legumes",
-    eatFruitsRegularly: "Consommer regulierement des fruits",
-    replaceSugaryDrinks: "Remplacer sodas/boissons sucrees par l'eau",
+    reduceSaltBouillon: "Arrêter les cubes et bouillons d'assaisonnement",
+    reduceSaltMeals: "Réduire au maximum la quantité de sel",
+    avoidProcessedFood: "Éviter les aliments transformés",
+    avoidSedentaryLifestyle: "Éviter la sédentarité",
+    activity30mFiveDays: "30 min d'activité physique modérée (>=5 jours/semaine)",
+    addVegetables: "Moitié de l'assiette en légumes",
+    eatFruitsRegularly: "Consommer régulièrement des fruits",
+    replaceSugaryDrinks: "Remplacer sodas/boissons sucrées par l'eau",
     stopSmoking: "Stop tabac",
     reduceAlcohol: "Limiter l'alcool",
-    monitorBloodPressureWeightSugar: "Surveiller tension, poids, glycemie",
-    consultIfHighRisk: "Consulter rapidement si risque eleve/tres eleve",
+    monitorBloodPressureWeightSugar: "Surveiller tension, poids, glycémie",
+    consultIfHighRisk: "Consulter rapidement si risque élevé/très élevé",
   };
 
   page.drawRectangle({
@@ -192,21 +192,21 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     borderColor: COLORS.primary,
     borderWidth: 1.2,
   });
-  page.drawText("PLENITUDE CLINIQUE KOUAM SAMUEL", {
+  page.drawText("PLÉNITUDE CLINIQUE KOUAM SAMUEL", {
     x: marginLeft + 10,
     y: y - 18,
     size: 11,
     font: fontBold,
     color: COLORS.primary,
   });
-  page.drawText("Rapport professionnel - Depistage cardiovasculaire", {
+  page.drawText("Rapport professionnel - Dépistage cardiovasculaire", {
     x: marginLeft + 10,
     y: y - 34,
     size: 10,
     font: fontRegular,
     color: COLORS.text,
   });
-  page.drawText(`Genere le ${new Date().toLocaleString("fr-FR")}`, {
+  page.drawText(`Généré le ${new Date().toLocaleString("fr-FR")}`, {
     x: marginLeft + 10,
     y: y - 47,
     size: 8,
@@ -216,38 +216,38 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
   y -= 66;
 
   drawSectionTitle("IDENTIFICATION DU PATIENT");
-  drawKeyValueRow("N d'enregistrement", record.registrationNumber);
+  drawKeyValueRow("N° d'enregistrement", record.registrationNumber);
   drawKeyValueRow("Date de fiche", record.patient.date);
-  drawKeyValueRow("Nom et prenom", record.patient.fullName);
-  drawKeyValueRow("Age / Sexe", `${record.patient.age} ans / ${record.patient.sex === "M" ? "Masculin" : "Feminin"}`);
-  drawKeyValueRow("Lieu de residence", record.patient.residence);
+  drawKeyValueRow("Nom et prénom", record.patient.fullName);
+  drawKeyValueRow("Âge / Sexe", `${record.patient.age} ans / ${record.patient.sex === "M" ? "Masculin" : "Féminin"}`);
+  drawKeyValueRow("Lieu de résidence", record.patient.residence);
   drawKeyValueRow("Profession", record.patient.profession);
-  drawKeyValueRow("Telephone", `${record.patient.phone1}${record.patient.phone2 ? ` / ${record.patient.phone2}` : ""}`);
+  drawKeyValueRow("Téléphone", `${record.patient.phone1}${record.patient.phone2 ? ` / ${record.patient.phone2}` : ""}`);
   y -= 8;
 
-  drawSectionTitle("FACTEURS DE RISQUE ET ANTECEDENTS");
+  drawSectionTitle("FACTEURS DE RISQUE ET ANTÉCÉDENTS");
   drawLine(
     `Tabagisme: ${record.riskFactors.smoking}${record.riskFactors.packYears ? ` | ${record.riskFactors.packYears} PA` : ""}${
-      record.riskFactors.yearsSinceQuit ? ` | Sevre depuis ${record.riskFactors.yearsSinceQuit} ans` : ""
+      record.riskFactors.yearsSinceQuit ? ` | Sevrage depuis ${record.riskFactors.yearsSinceQuit} ans` : ""
     }`,
   );
   drawLine(`Consommation alcool: ${record.riskFactors.alcohol}`);
-  drawLine(`Activite physique (30 min): ${record.riskFactors.physicalActivity}`);
+  drawLine(`Activité physique (30 min): ${record.riskFactors.physicalActivity}`);
   drawLine(
-    `Antecedents personnels: ${
+    `Antécédents personnels: ${
       record.riskFactors.personalHistory.length
         ? record.riskFactors.personalHistory.map((item) => personalHistoryMap[item]).join(", ")
         : "Aucun"
     }`,
   );
   drawLine(
-    `Antecedents familiaux: ${
+    `Antécédents familiaux: ${
       record.riskFactors.familyHistory.length
         ? record.riskFactors.familyHistory.map((item) => familyHistoryMap[item]).join(", ")
         : "Aucun"
     }`,
   );
-  drawLine(`Traitement en cours: ${record.riskFactors.ongoingTreatment || "Non precise"}`);
+  drawLine(`Traitement en cours: ${record.riskFactors.ongoingTreatment || "Non précisé"}`);
   y -= 6;
 
   drawSectionTitle("CONSTANTES ET BIOLOGIE");
@@ -261,14 +261,14 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     `Poids: ${record.vitalsBiology.weightKg} kg | Taille: ${record.vitalsBiology.heightCm} cm | IMC: ${record.vitalsBiology.bmi}`,
   );
   drawLine(`Tour de taille: ${record.vitalsBiology.waistCm} cm`);
-  drawLine(`Glycemie a jeun: ${record.vitalsBiology.fastingGlucoseGl} g/L`);
+  drawLine(`Glycémie à jeun: ${record.vitalsBiology.fastingGlucoseGl} g/L`);
   y -= 6;
 
   if (record.vitalsGuidance) {
     const vg = record.vitalsGuidance;
-    drawSectionTitle("SYNTHESE AUTOMATIQUE (CONSTANTES)");
+    drawSectionTitle("SYNTHÈSE AUTOMATIQUE (CONSTANTES)");
     drawLine(
-      "Informations derivees des mesures ci-dessus et du sexe ; aide non substitutive du jugement clinique.",
+      "Informations dérivées des mesures ci-dessus et du sexe ; aide non substitutive du jugement clinique.",
       { size: 9, color: COLORS.muted },
     );
     if (vg.bloodPressureAvg) {
@@ -280,78 +280,78 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
       drawLine(`Action: ${vg.bloodPressureAvg.action}`);
     }
     if (vg.bmi) {
-      drawLine(`IMC: ${vg.bmi.value} kg/m2 — ${vg.bmi.weightStatus} (${vg.bmi.intervalLabel})`);
-      drawLine(`Risque metabolique: ${vg.bmi.metabolicRisk}`);
+      drawLine(`IMC: ${vg.bmi.value} kg/m2 - ${vg.bmi.weightStatus} (${vg.bmi.intervalLabel})`);
+      drawLine(`Risque métabolique: ${vg.bmi.metabolicRisk}`);
     }
     if (vg.waist) {
-      drawLine(`Tour de taille: ${vg.waist.value} cm — ${vg.waist.thresholdLabel}`);
-      drawLine(`Risque cardiometabolique (perimetre): ${vg.waist.cardiometabolicRisk}`);
+      drawLine(`Tour de taille: ${vg.waist.value} cm - ${vg.waist.thresholdLabel}`);
+      drawLine(`Risque cardiométabolique (périmètre): ${vg.waist.cardiometabolicRisk}`);
     }
     if (vg.glucose) {
-      drawLine(`Glycemie a jeun: ${vg.glucose.valueGPerL} g/L — ${vg.glucose.status}`);
-      drawLine(`Risque clinique (glycemie): ${vg.glucose.clinicalRisk}`);
+      drawLine(`Glycémie à jeun: ${vg.glucose.valueGPerL} g/L - ${vg.glucose.status}`);
+      drawLine(`Risque clinique (glycémie): ${vg.glucose.clinicalRisk}`);
     }
-    drawLine(`Synthese calculee le: ${vg.computedAt}`, { size: 9, color: COLORS.muted });
+    drawLine(`Synthèse calculée le: ${vg.computedAt}`, { size: 9, color: COLORS.muted });
     y -= 6;
   }
 
-  drawSectionTitle("INTERPRETATION GLOBALE");
+  drawSectionTitle("INTERPRÉTATION GLOBALE");
   drawLine(
-    `Interpretations cochees: ${
+    `Interprétations cochées: ${
       record.interpretation.labels.length
         ? record.interpretation.labels.map((item) => interpretationMap[item] ?? item).join(", ")
         : "Aucune"
     }`,
   );
-  drawLine(`Autre interpretation: ${record.interpretation.other || "Aucune"}`);
+  drawLine(`Autre interprétation: ${record.interpretation.other || "Aucune"}`);
   y -= 6;
 
   const scoreOmsEligible =
     typeof record.patient.age === "number" &&
     Number.isFinite(record.patient.age) &&
-    record.patient.age >= 40;
+    record.patient.age <= 40;
 
   if (scoreOmsEligible) {
-    drawSectionTitle("EVALUATION DU RISQUE CARDIOVASCULAIRE");
-    drawLine(`Evaluation activee: ${record.cardiovascularRisk.enabled ? "Oui" : "Non"}`);
+    drawSectionTitle("ÉVALUATION DU RISQUE CARDIOVASCULAIRE");
+    drawLine(`Évaluation activée: ${record.cardiovascularRisk.enabled ? "Oui" : "Non"}`);
     drawLine(
       `Niveau de risque: ${
-        record.cardiovascularRisk.level ? riskMap[record.cardiovascularRisk.level] : "Non evalue"
+        record.cardiovascularRisk.level ? riskMap[record.cardiovascularRisk.level] : "Non évalué"
       }`,
     );
     drawLine(`Note SCORE OMS: ${record.cardiovascularRisk.scoreNote || "Aucune"}`);
     y -= 6;
   }
 
-  drawSectionTitle("ORIENTATION ET DECISION MEDICALE");
+  drawSectionTitle("ORIENTATION ET DÉCISION MÉDICALE");
   drawLine(
-    `Orientations cochees: ${
+    `Orientations cochées: ${
       record.orientationDecision.items.length ? record.orientationDecision.items.join(", ") : "Aucune"
     }`,
   );
   drawLine(`Autre orientation: ${record.orientationDecision.other || "Aucune"}`);
   drawLine(
-    `Rendez-vous de controle: ${
+    `Rendez-vous de contrôle: ${
       record.orientationDecision.followUpDate
         ? `${record.orientationDecision.followUpDate} ${record.orientationDecision.followUpTime ?? ""}`.trim()
-        : "Non defini"
+        : "Non défini"
     }`,
   );
   y -= 6;
 
   drawSectionTitle("IDENTIFICATION DU PERSONNEL");
-  drawLine(`Infirmier(ere): ${record.staffIdentity.nurseName || "Non renseigne"}`);
-  drawLine(`Medecin: ${record.staffIdentity.doctorName || "Non renseigne"}`);
+  drawLine(`Infirmier(ère): ${record.staffIdentity.nurseName || "Non renseigné"}`);
+  drawLine(`Médecin: ${record.staffIdentity.doctorName || "Non renseigné"}`);
   y -= 6;
 
-  drawSectionTitle("CONSEILS HYGIENO-DIETETIQUES");
+  drawSectionTitle("CONSEILS HYGIÉNO-DIÉTÉTIQUES");
   const checkedAdvice = Object.entries(record.hygienoDietAdvice)
     .filter(([, checked]) => checked)
     .map(([label]) => adviceMap[label] ?? label);
-  drawLine(checkedAdvice.length ? checkedAdvice.join(", ") : "Aucun conseil coche");
+  drawLine(checkedAdvice.length ? checkedAdvice.join(", ") : "Aucun conseil coché");
 
   y -= 8;
-  drawLine(`Fiche validee par medecin: ${record.validatedAt ? "Oui" : "Non"}`, { bold: true });
+  drawLine(`Fiche validée par médecin: ${record.validatedAt ? "Oui" : "Non"}`, { bold: true });
   drawLine(
     `Date validation: ${record.validatedAt ? new Date(record.validatedAt).toLocaleString("fr-FR") : "N/A"}`,
     { color: COLORS.muted },
@@ -362,7 +362,7 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
   const qrImage = await pdfDoc.embedPng(qrDataUrl);
   ensureSpace(130);
   page.drawImage(qrImage, { x: pageSize[0] - 150, y: marginBottom, width: 110, height: 110 });
-  page.drawText("QR verification", {
+  page.drawText("QR vérification", {
     x: pageSize[0] - 140,
     y: marginBottom - 12,
     size: 9,

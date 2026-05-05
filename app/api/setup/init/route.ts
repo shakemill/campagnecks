@@ -15,7 +15,7 @@ const schema = z.object({
 export async function POST(request: NextRequest) {
   const state = await getStorageAdapter().readState();
   if (state.campaignUsers.length > 0) {
-    return NextResponse.json({ message: "Setup deja effectue." }, { status: 400 });
+    return NextResponse.json({ message: "Setup déjà effectué." }, { status: 400 });
   }
 
   const raw = await request.json();

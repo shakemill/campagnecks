@@ -44,7 +44,7 @@ export default async function ScreeningDetailPage({ params }: Params) {
                 className="inline-flex items-center gap-1.5 rounded-md bg-brand-green px-3 py-2 text-sm font-medium text-white transition-all duration-200 ease-in-out hover:opacity-90"
               >
                 <Download className="h-4 w-4" />
-                Telecharger PDF
+                Télécharger PDF
               </a>
             ) : null}
             {canEdit ? (

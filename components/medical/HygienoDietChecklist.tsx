@@ -26,18 +26,18 @@ type HygienoDietChecklistProps = {
 };
 
 const adviceItems: Array<{ key: AdviceField; label: string }> = [
-  { key: "reduceSaltBouillon", label: "Arreter les cubes et bouillons" },
-  { key: "reduceSaltMeals", label: "Reduire la quantite de sel" },
-  { key: "avoidProcessedFood", label: "Eviter les aliments transformes" },
-  { key: "avoidSedentaryLifestyle", label: "Eviter la sedentarite" },
-  { key: "activity30mFiveDays", label: "30 minutes d'activite, 5 jours/semaine" },
-  { key: "addVegetables", label: "Moitie de l'assiette en legumes" },
-  { key: "eatFruitsRegularly", label: "Consommer regulierement des fruits" },
+  { key: "reduceSaltBouillon", label: "Arrêter les cubes et bouillons" },
+  { key: "reduceSaltMeals", label: "Réduire la quantité de sel" },
+  { key: "avoidProcessedFood", label: "Éviter les aliments transformés" },
+  { key: "avoidSedentaryLifestyle", label: "Éviter la sédentarité" },
+  { key: "activity30mFiveDays", label: "30 minutes d'activité, 5 jours/semaine" },
+  { key: "addVegetables", label: "Moitié de l'assiette en légumes" },
+  { key: "eatFruitsRegularly", label: "Consommer régulièrement des fruits" },
   { key: "replaceSugaryDrinks", label: "Remplacer sodas par eau" },
-  { key: "stopSmoking", label: "Arret du tabac" },
+  { key: "stopSmoking", label: "Arrêt du tabac" },
   { key: "reduceAlcohol", label: "Limiter l'alcool" },
-  { key: "monitorBloodPressureWeightSugar", label: "Suivre tension, poids, glycemie" },
-  { key: "consultIfHighRisk", label: "Consulter rapidement si risque eleve" },
+  { key: "monitorBloodPressureWeightSugar", label: "Suivre tension, poids, glycémie" },
+  { key: "consultIfHighRisk", label: "Consulter rapidement si risque élevé" },
 ];
 
 export function HygienoDietChecklist({
@@ -50,14 +50,14 @@ export function HygienoDietChecklist({
     <div className="grid gap-2 rounded-lg border bg-surface-muted/40 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-heading text-sm font-semibold text-brand-gray">
-          VOTRE COEUR EST PRECIEUX : 5 REFLEXES POUR LE PROTEGER
+          VOTRE CŒUR EST PRÉCIEUX : 5 RÉFLEXES POUR LE PROTÉGER
         </h3>
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={onCheckAll}>
             Cocher tout
           </Button>
           <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={onUncheckAll}>
-            Tout decocher
+            Tout décocher
           </Button>
         </div>
       </div>

@@ -14,7 +14,7 @@ export function PatientHeader({ fullName, age, bloodPressure, status }: PatientH
         <div>
           <h2 className="font-heading text-xl font-semibold text-brand-gray">{fullName}</h2>
           <p className="text-sm text-muted-foreground">
-            {age} ans · PA actuelle: {bloodPressure}
+            {age} ans · PA actuelle : {bloodPressure}
           </p>
         </div>
         <StatusBadge status={status} />

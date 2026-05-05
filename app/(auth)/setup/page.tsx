@@ -22,7 +22,7 @@ export default async function SetupPage() {
               Initialisation Cks Manager
             </h1>
             <p className="text-sm text-muted-foreground">
-              Creez le premier compte medecin administrateur.
+              Créez le premier compte médecin administrateur.
             </p>
           </div>
         </div>

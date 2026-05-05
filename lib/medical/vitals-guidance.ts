@@ -46,64 +46,64 @@ export function classifyBloodPressure(
 
   if (sys >= 180 && dia >= 110) {
     return {
-      classification: "Hypertension arterielle grade 3 (severe)",
-      cardiovascularRisk: "Risque cardiovasculaire tres eleve",
+      classification: "Hypertension artérielle grade 3 (sévère)",
+      cardiovascularRisk: "Risque cardiovasculaire très élevé",
       action:
-        "Consultation medicale rapprochee ou urgente selon le contexte clinique ; bilan et traitement adapte.",
+        "Consultation médicale rapprochée ou urgente selon le contexte clinique ; bilan et traitement adapté.",
     };
   }
   if (sys >= 160 && sys <= 179 && dia >= 100 && dia <= 109) {
     return {
-      classification: "Hypertension arterielle grade 2 (moderee)",
-      cardiovascularRisk: "Risque cardiovasculaire eleve",
+      classification: "Hypertension artérielle grade 2 (modérée)",
+      cardiovascularRisk: "Risque cardiovasculaire élevé",
       action:
-        "Suivi medical rapproche ; mesures hygieno-dietetiques et evaluation therapeutique selon les recommandations.",
+        "Suivi médical rapproché ; mesures hygiéno-diététiques et évaluation thérapeutique selon les recommandations.",
     };
   }
   if (sys >= 140 && dia < 90) {
     return {
-      classification: "Hypertension systolique isolee",
-      cardiovascularRisk: "Risque cardiovasculaire variable selon l'age et les comorbidites",
+      classification: "Hypertension systolique isolée",
+      cardiovascularRisk: "Risque cardiovasculaire variable selon l'âge et les comorbidités",
       action:
-        "Confirmation par mesures repetees ; recherche d'atteinte d'organes et adaptation du suivi cardiometabolique.",
+        "Confirmation par mesures répétées ; recherche d'atteinte d'organes et adaptation du suivi cardiométabolique.",
     };
   }
   if (sys >= 140 && sys <= 159 && dia >= 90 && dia <= 99) {
     return {
-      classification: "Hypertension arterielle grade 1 (legere)",
-      cardiovascularRisk: "Risque cardiovasculaire a stratifier (facteurs associes)",
+      classification: "Hypertension artérielle grade 1 (légère)",
+      cardiovascularRisk: "Risque cardiovasculaire à stratifier (facteurs associés)",
       action:
-        "Mesures de vie et suivi ; reevaluation selon le risque global et les guides en vigueur.",
+        "Mesures de vie et suivi ; réévaluation selon le risque global et les guides en vigueur.",
     };
   }
   if (sys >= 130 && sys <= 139 && dia >= 85 && dia <= 89) {
     return {
-      classification: "Tension arterielle normale elevee",
-      cardiovascularRisk: "Risque cardiometabolique modere selon le profil",
+      classification: "Tension artérielle normale élevée",
+      cardiovascularRisk: "Risque cardiométabolique modéré selon le profil",
       action:
-        "Renforcer prevention (sel, activite physique, poids) ; controle tensionnel regulier.",
+        "Renforcer prévention (sel, activité physique, poids) ; contrôle tensionnel régulier.",
     };
   }
   if (sys >= 120 && sys <= 129 && dia >= 80 && dia <= 84) {
     return {
-      classification: "Tension arterielle normale",
-      cardiovascularRisk: "Risque faible sur ce critere isole",
-      action: "Maintenir les habitudes de vie favorables ; depistage selon l'age.",
+      classification: "Tension artérielle normale",
+      cardiovascularRisk: "Risque faible sur ce critère isolé",
+      action: "Maintenir les habitudes de vie favorables ; dépistage selon l'âge.",
     };
   }
   if (sys < 120 && dia < 80) {
     return {
-      classification: "Tension arterielle optimale",
-      cardiovascularRisk: "Risque faible sur ce critere isole",
-      action: "Conserver une alimentation equilibree et une activite physique reguliere.",
+      classification: "Tension artérielle optimale",
+      cardiovascularRisk: "Risque faible sur ce critère isolé",
+      action: "Conserver une alimentation équilibrée et une activité physique régulière.",
     };
   }
 
   return {
     classification:
-      "Classification PA : indeterminee par le tableau (valeurs hors plages discretes)",
-    cardiovascularRisk: "Interpretation non applicable selon les classes definies.",
-    action: "Reevaluation clinique et mesures repetees.",
+      "Classification PA : indéterminée par le tableau (valeurs hors plages discrètes)",
+    cardiovascularRisk: "Interprétation non applicable selon les classes définies.",
+    action: "Réévaluation clinique et mesures répétées.",
   };
 }
 
@@ -118,9 +118,9 @@ export function classifyBmi(
   if (bmi < 18.5) {
     return {
       value,
-      weightStatus: "Insuffisance ponderale",
+      weightStatus: "Insuffisance pondérale",
       intervalLabel: "IMC < 18,5 kg/m²",
-      metabolicRisk: "Risque nutritionnel et global a evaluer cliniquement",
+      metabolicRisk: "Risque nutritionnel et global à évaluer cliniquement",
     };
   }
   if (bmi < 25) {
@@ -128,7 +128,7 @@ export function classifyBmi(
       value,
       weightStatus: "Corpulence normale",
       intervalLabel: "IMC 18,5–24,9 kg/m²",
-      metabolicRisk: "Risque metabolique faible sur ce critere isole",
+      metabolicRisk: "Risque métabolique faible sur ce critère isolé",
     };
   }
   if (bmi < 30) {
@@ -136,30 +136,33 @@ export function classifyBmi(
       value,
       weightStatus: "Surpoids",
       intervalLabel: "IMC 25,0–29,9 kg/m²",
-      metabolicRisk: "Risque cardiometabolique accru selon la distribution graisseuse et les autres facteurs",
+      metabolicRisk:
+        "Risque cardiométabolique accru selon la distribution graisseuse et les autres facteurs",
     };
   }
   if (bmi < 35) {
     return {
       value,
-      weightStatus: "Obesite classe I",
+      weightStatus: "Obésité classe I",
       intervalLabel: "IMC 30,0–34,9 kg/m²",
-      metabolicRisk: "Risque cardiometabolique eleve ; depistage syndrome metabolique recommande",
+      metabolicRisk:
+        "Risque cardiométabolique élevé ; dépistage du syndrome métabolique recommandé",
     };
   }
   if (bmi < 40) {
     return {
       value,
-      weightStatus: "Obesite classe II (severe)",
+      weightStatus: "Obésité classe II (sévère)",
       intervalLabel: "IMC 35,0–39,9 kg/m²",
-      metabolicRisk: "Risque cardiometabolique et cardiovasculaire majore",
+      metabolicRisk: "Risque cardiométabolique et cardiovasculaire majoré",
     };
   }
   return {
     value,
-    weightStatus: "Obesite classe III (morbide)",
+    weightStatus: "Obésité classe III (morbide)",
     intervalLabel: "IMC ≥ 40 kg/m²",
-    metabolicRisk: "Risque cardiometabolique et complications tres eleves ; prise en charge specialisee",
+    metabolicRisk:
+      "Risque cardiométabolique et complications très élevés ; prise en charge spécialisée",
   };
 }
 
@@ -177,52 +180,52 @@ export function classifyWaist(
     if (waistCm < 94) {
       return {
         value,
-        thresholdLabel: "En dessous du seuil augmente (94 cm — homme)",
+        thresholdLabel: "En dessous du seuil augmenté (94 cm — homme)",
         cardiometabolicRisk:
-          "Risque abdominal faible selon ce critere isole ; depend des autres facteurs de risque",
+          "Risque abdominal faible selon ce critère isolé ; dépend des autres facteurs de risque",
       };
     }
     if (waistCm < 102) {
       return {
         value,
-        thresholdLabel: "Seuil augmente (94–101 cm — homme)",
+        thresholdLabel: "Seuil augmenté (94–101 cm — homme)",
         cardiometabolicRisk:
-          "Risque cardiometabolique accru ; synergies avec tension, glycemie et lipidogramme",
+          "Risque cardiométabolique accru ; synergies avec tension, glycémie et lipidogramme",
       };
     }
     return {
       value,
-      thresholdLabel: "Seuil tres augmente (≥ 102 cm — homme)",
+      thresholdLabel: "Seuil très augmenté (≥ 102 cm — homme)",
       cardiometabolicRisk:
-        "Risque cardiometabolique eleve ; depistage intensif du syndrome metabolique recommande",
+        "Risque cardiométabolique élevé ; dépistage intensif du syndrome métabolique recommandé",
     };
   }
 
   if (waistCm < 80) {
     return {
       value,
-      thresholdLabel: "En dessous du seuil augmente (80 cm — femme)",
+      thresholdLabel: "En dessous du seuil augmenté (80 cm — femme)",
       cardiometabolicRisk:
-        "Risque abdominal faible selon ce critere isole ; depend des autres facteurs de risque",
+        "Risque abdominal faible selon ce critère isolé ; dépend des autres facteurs de risque",
     };
   }
   if (waistCm < 88) {
     return {
       value,
-      thresholdLabel: "Seuil augmente (80–87 cm — femme)",
+      thresholdLabel: "Seuil augmenté (80–87 cm — femme)",
       cardiometabolicRisk:
-        "Risque cardiometabolique accru ; synergies avec tension, glycemie et lipidogramme",
+        "Risque cardiométabolique accru ; synergies avec tension, glycémie et lipidogramme",
     };
   }
   return {
     value,
-    thresholdLabel: "Seuil tres augmente (≥ 88 cm — femme)",
+    thresholdLabel: "Seuil très augmenté (≥ 88 cm — femme)",
     cardiometabolicRisk:
-      "Risque cardiometabolique eleve ; depistage intensif du syndrome metabolique recommande",
+      "Risque cardiométabolique élevé ; dépistage intensif du syndrome métabolique recommandé",
   };
 }
 
-/** Glycemie a jeun en g/L (seuils usuels francais). */
+/** Glycémie à jeun en g/L (seuils usuels français). */
 export function classifyFastingGlucoseGPerL(
   glucoseGPerL: number,
 ): Pick<NonNullable<VitalsGuidance["glucose"]>, "status" | "clinicalRisk"> & {
@@ -233,23 +236,24 @@ export function classifyFastingGlucoseGPerL(
   if (glucoseGPerL < 1.1) {
     return {
       valueGPerL,
-      status: "Normoglycemie a jeun",
-      clinicalRisk: "Risque glycemique faible sur cette mesure isolee ; depistage selon les facteurs de risque",
+      status: "Normoglycémie à jeun",
+      clinicalRisk:
+        "Risque glycémique faible sur cette mesure isolée ; dépistage selon les facteurs de risque",
     };
   }
   if (glucoseGPerL < 1.26) {
     return {
       valueGPerL,
-      status: "Hyperglycemie a jeun / prediabete",
+      status: "Hyperglycémie à jeun / prédiabète",
       clinicalRisk:
-        "Risque de progression vers le diabete ; confirmation biologique et mesures hygieno-dietetiques",
+        "Risque de progression vers le diabète ; confirmation biologique et mesures hygiéno-diététiques",
     };
   }
   return {
     valueGPerL,
-    status: "Hyperglycemie a jeun compatible avec un diabete (a confirmer)",
+    status: "Hyperglycémie à jeun compatible avec un diabète (à confirmer)",
     clinicalRisk:
-      "Risque cardiometabolique eleve ; bilan glycemique structure et avis medical selon les protocoles",
+      "Risque cardiométabolique élevé ; bilan glycémique structuré et avis médical selon les protocoles",
   };
 }
 
@@ -257,7 +261,7 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-/** Assemble la synthèse derivee ; `undefined` si aucune mesure exploitable. */
+/** Assemble la synthèse dérivée ; `undefined` si aucune mesure exploitable. */
 export function buildVitalsGuidance(
   record: Pick<ScreeningRecord, "patient" | "vitalsBiology">,
 ): VitalsGuidance | undefined {

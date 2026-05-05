@@ -25,15 +25,15 @@ export function ChangePasswordForm() {
       });
 
       if (!response.ok) {
-        toast.error("Impossible de mettre a jour le mot de passe.");
+        toast.error("Impossible de mettre à jour le mot de passe.");
         return;
       }
 
-      toast.success("Mot de passe mis a jour.");
+      toast.success("Mot de passe mis à jour.");
       await signOut({ callbackUrl: "/login" });
     } catch (error) {
       console.error(error);
-      toast.error("Erreur reseau.");
+      toast.error("Erreur réseau.");
     } finally {
       setIsSubmitting(false);
     }

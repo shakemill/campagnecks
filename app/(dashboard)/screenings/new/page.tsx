@@ -16,7 +16,7 @@ export default async function NewScreeningPage() {
     return (
       <AlertBanner
         type="warning"
-        message="Aucune campagne active. Le medecin doit creer ou reouvrir une campagne avant la saisie."
+        message="Aucune campagne active. Le médecin doit créer ou rouvrir une campagne avant la saisie."
       />
     );
   }
@@ -25,8 +25,8 @@ export default async function NewScreeningPage() {
     <div className="space-y-4">
       <PageHeader
         icon={FilePlus2}
-        title="Nouvelle fiche de depistage"
-        subtitle={`Campagne par defaut: ${latestCampaign.name}`}
+        title="Nouvelle fiche de dépistage"
+        subtitle={`Campagne par défaut : ${latestCampaign.name}`}
       />
       <ScreeningForm
         role={session.user.role}

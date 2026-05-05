@@ -31,15 +31,15 @@ export function SetupForm() {
       });
 
       if (!response.ok) {
-        toast.error("Echec de l'initialisation.");
+        toast.error("Échec de l'initialisation.");
         return;
       }
 
-      toast.success("Compte medecin initial cree.");
+      toast.success("Compte médecin initial créé.");
       router.push("/login");
     } catch (error) {
       console.error(error);
-      toast.error("Erreur reseau lors de l'initialisation.");
+      toast.error("Erreur réseau lors de l'initialisation.");
     } finally {
       setIsSubmitting(false);
     }
