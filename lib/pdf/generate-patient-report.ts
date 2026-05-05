@@ -35,8 +35,15 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     }
   }
 
+  function sanitizePdfText(value: string): string {
+    // WinAnsi (polices StandardFonts) n'encode pas les retours ligne bruts.
+    // On normalise les espaces pour éviter les erreurs d'encodage à la mesure/dessin.
+    return value.replace(/\r?\n/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim();
+  }
+
   function wrapText(text: string, size = 10, maxWidth = contentWidth): string[] {
-    const words = text.split(" ");
+    const normalized = sanitizePdfText(text);
+    const words = normalized.split(" ");
     const lines: string[] = [];
     let current = "";
 
@@ -102,6 +109,8 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     const labelWidth = 170;
     const valueWidth = contentWidth - labelWidth;
     ensureSpace(rowHeight);
+    const safeLabel = sanitizePdfText(label);
+    const safeValue = sanitizePdfText(value || "-");
 
     page.drawRectangle({
       x: marginLeft,
@@ -121,14 +130,14 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
       borderColor: COLORS.border,
       borderWidth: 0.5,
     });
-    page.drawText(label, {
+    page.drawText(safeLabel, {
       x: marginLeft + 6,
       y: y - 11,
       size: 9,
       font: fontBold,
       color: COLORS.muted,
     });
-    page.drawText(value || "-", {
+    page.drawText(safeValue, {
       x: marginLeft + labelWidth + 6,
       y: y - 11,
       size: 9,
