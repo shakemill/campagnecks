@@ -169,18 +169,21 @@ export async function generatePatientReportPdf(record: ScreeningRecord): Promise
     TRES_TRES_ELEVE: "Risque très très élevé (>=30%)",
   };
   const adviceMap: Record<string, string> = {
-    reduceSaltBouillon: "Arrêter les cubes et bouillons d'assaisonnement",
-    reduceSaltMeals: "Réduire au maximum la quantité de sel",
-    avoidProcessedFood: "Éviter les aliments transformés",
-    avoidSedentaryLifestyle: "Éviter la sédentarité",
-    activity30mFiveDays: "30 min d'activité physique modérée (>=5 jours/semaine)",
-    addVegetables: "Moitié de l'assiette en légumes",
-    eatFruitsRegularly: "Consommer régulièrement des fruits",
-    replaceSugaryDrinks: "Remplacer sodas/boissons sucrées par l'eau",
-    stopSmoking: "Stop tabac",
-    reduceAlcohol: "Limiter l'alcool",
-    monitorBloodPressureWeightSugar: "Surveiller tension, poids, glycémie",
-    consultIfHighRisk: "Consulter rapidement si risque élevé/très élevé",
+    reduceSaltBouillon: "Arrêtez d'utiliser les cubes et bouillons d'assaisonnement.",
+    reduceSaltMeals: "Réduisez au maximum la quantité de sel dans vos repas.",
+    avoidProcessedFood: "Évitez les aliments transformés.",
+    avoidSedentaryLifestyle:
+      "Évitez la sédentarité : réduisez au maximum votre temps d'éveil passé assis ou allongé.",
+    activity30mFiveDays:
+      "Faites au moins 30 minutes d'activité physique modérée (exemples : marche rapide, footing, danse, natation...) minimum 5 jours par semaine.",
+    addVegetables: "Remplissez la moitié de votre assiette avec des légumes.",
+    eatFruitsRegularly: "Consommez régulièrement des fruits.",
+    replaceSugaryDrinks: "Remplacez les boissons sucrées et sodas par de l'eau.",
+    stopSmoking: "Le tabac bouche vos artères dès la première cigarette.",
+    reduceAlcohol: "Limitez l'alcool à des occasions exceptionnelles.",
+    monitorBloodPressureWeightSugar: "Connaissez votre tension, votre poids et votre sucre (glycémie).",
+    consultIfHighRisk:
+      "Si votre risque est Orange (élevé), Rouge clair (très élevé) ou Rouge foncé (très très élevé), consultez un médecin rapidement.",
   };
 
   page.drawRectangle({
