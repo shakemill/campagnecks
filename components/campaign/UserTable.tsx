@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { KeyRound, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -43,7 +43,9 @@ export function UserTable({ users, campaigns, canEdit = false }: UserTableProps)
 
   const [editTarget, setEditTarget] = useState<CampaignUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CampaignUser | null>(null);
+  const [resetTarget, setResetTarget] = useState<CampaignUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const form = useForm<CampaignUserUpdateInput>({
     resolver: zodResolver(campaignUserUpdateSchema),
@@ -77,6 +79,20 @@ export function UserTable({ users, campaigns, canEdit = false }: UserTableProps)
     router.refresh();
   }
 
+  async function confirmReset() {
+    if (!resetTarget) return;
+    setIsResetting(true);
+    const res = await fetch(`/api/users/${resetTarget.id}/reset-password`, { method: "POST" });
+    setIsResetting(false);
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { message?: string };
+      toast.error(data.message ?? "Réinitialisation impossible. Réessayez.");
+      return;
+    }
+    toast.success(`Nouveau mot de passe envoyé à ${resetTarget.email}.`);
+    setResetTarget(null);
+  }
+
   async function confirmDelete() {
     if (!deleteTarget) return;
     setIsDeleting(true);
@@ -104,7 +120,7 @@ export function UserTable({ users, campaigns, canEdit = false }: UserTableProps)
               <TableHead>Rôle</TableHead>
               <TableHead>Campagne</TableHead>
               <TableHead>Statut</TableHead>
-              {canEdit && <TableHead className="w-24 text-right">Actions</TableHead>}
+              {canEdit && <TableHead className="w-32 text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -145,6 +161,15 @@ export function UserTable({ users, campaigns, canEdit = false }: UserTableProps)
                         aria-label={`Modifier ${user.firstName} ${user.lastName}`}
                       >
                         <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-amber-600"
+                        onClick={() => setResetTarget(user)}
+                        aria-label={`Réinitialiser le mot de passe de ${user.firstName} ${user.lastName}`}
+                      >
+                        <KeyRound className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -276,6 +301,33 @@ export function UserTable({ users, campaigns, canEdit = false }: UserTableProps)
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog confirmation réinitialisation mot de passe */}
+      <Dialog open={!!resetTarget} onOpenChange={(open) => !open && setResetTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Réinitialiser le mot de passe ?</DialogTitle>
+            <DialogDescription>
+              Un nouveau mot de passe temporaire sera généré et envoyé par e-mail à{" "}
+              <span className="font-semibold">{resetTarget?.email}</span>.{" "}
+              L&apos;utilisateur devra le changer à sa prochaine connexion.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetTarget(null)} disabled={isResetting}>
+              Annuler
+            </Button>
+            <Button
+              onClick={confirmReset}
+              disabled={isResetting}
+              className="gap-2 bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {isResetting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Envoyer le nouveau mot de passe
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
