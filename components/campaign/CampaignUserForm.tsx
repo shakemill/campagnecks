@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Mail, UserPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ type CampaignUserFormProps = {
 };
 
 export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
+  const router = useRouter();
   const selectableCampaigns = campaigns.filter((item) => item.status === "ACTIVE");
   const defaultCampaignId = selectableCampaigns[0]?.id ?? "";
   const form = useForm<CampaignUserInput>({
@@ -45,6 +47,7 @@ export function CampaignUserForm({ campaigns }: CampaignUserFormProps) {
       }
       toast.success("Compte créé et identifiants envoyés par e-mail.");
       form.reset({ ...form.getValues(), firstName: "", lastName: "", email: "" });
+      router.refresh();
     } catch (error) {
       console.error(error);
       toast.error("Erreur réseau lors de la création du compte.");
